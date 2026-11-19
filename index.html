@@ -504,7 +504,7 @@ function human(c, t, ph, o) {
   const play = !!o.play, eu = o.eu || 0, tilt = o.tilt || 0, hopY = o.hop || 0;
   const beat = (t * 2 + ph) % 1, nod = play && !eu ? (beat < .5 ? 0 : 1) : 0, fr = Math.floor(t * (4 + eu * 8) + ph * 2) % 2;
   const br = !play && Math.sin(t * 1.6 + ph * 4) > .6 ? 1 : 0, bang = eu ? Math.round(Math.sin(t * 14 + ph) * 2 * eu) : 0;
-  const jump = -Math.round(eu * Math.abs(Math.sin(t * 8 + ph * 3)) * 15) - Math.round(hopY), drums = c.kind === 'drums';
+  const jump = -Math.round(eu * Math.abs(Math.sin(t * 8 + ph * 3)) * 15) - Math.round(hopY) - (o.walk ? Math.round(Math.abs(Math.sin(t * 14)) * 1.5) : 0), drums = c.kind === 'drums';
   const K = drums ? fn => { ctx.translate(0, -jump); fn(); ctx.translate(0, jump); } : fn => fn();
   R(-11, -1, 22, 2, 'rgba(0,0,0,.4)');
   ctx.translate(0, jump);
@@ -514,7 +514,8 @@ function human(c, t, ph, o) {
       R(-30, -47 + hit, 18, 3, '#f0b43c'); R(-29, -48 + hit, 16, 1, '#ffe08a'); R(12, -45 + (1 - hit), 20, 3, '#e0a02c'); R(13, -46 + (1 - hit), 18, 1, '#ffe08a'); R(-34, -30, 10, 2, '#d99a2a'); });
     R(-4, -15, 11, 5, c.pants); R(6, -15, 5, 14, c.pants); R(9, -3, 7, 3, c.shoe); R(-7, -14, 14, 3, '#222');
   } else {
-    R(-5, -15, 4, 13, c.pants); R(1, -15, 4, 13, c.pants); R(-6, -3, 6, 3, c.shoe); R(0, -3, 8, 3, c.shoe);
+    const sw = o.walk ? Math.sin(t * 14) : 0, wk = Math.round(sw * 3), lf = sw > 0 ? 2 : 0, lb = sw < 0 ? 2 : 0;
+    R(-5 + wk, -15, 4, 13 - lf, c.pants); R(1 - wk, -15, 4, 13 - lb, c.pants); R(-6 + wk, -3 - lf, 6, 3, c.shoe); R(0 - wk, -3 - lb, 8, 3, c.shoe);
   }
   /* torso */
   R(-6, -30, 12, 15, c.shirt); R(4, -30, 2, 15, c.shade); R(-6, -16, 12, 1, '#222'); R(-1, -32, 3, 3, c.skin);
@@ -745,16 +746,16 @@ function propsBanda(zx, t) {
   /* el que se adelanta se dibuja al final, para quedar por delante de los otros */
   [0, 2, 1].sort((a, b) => gz[a] - gz[b]).forEach(i => {
     const x = zx + SL[i] * sp, a = act[i], play = a > .5, eu = play ? a : 0, seg = Math.floor(t / 2.6 + i * 1.37), r = hsh(seg * 3.1 + i * 17), r2 = hsh(seg * 7.7 + i * 5);
-    const g = gz[i], sc = g > .5 ? 1.25 : 1, gy = gy0 + Math.round(16 * g);   /* solo este músico baja al frente y crece */
-    const hv = mouseX >= x - 26 * sc && mouseX < x + 26 * sc && mouseY >= gy0 - 56 * sc && mouseY < gy + 2 && !vOpen;
-    gz[i] += ((hv || sel === i ? 1 : 0) - g) * (1 - Math.exp(-dtG * 9));
-    const tw = Math.round(52 * sc), tw2 = Math.round(48 * sc); R(x - tw / 2, gy - 2, tw, 4, '#f0b43c'); R(x - tw2 / 2, gy + 2, tw2, 3, '#7a1220');
+    const g = gz[i], gy = gy0 + Math.round(26 * g), sc = (hovC[i] || g > .02) ? 1.25 : 1;   /* baja de la tarima y camina al frente */
+    hovC[i] = mouseX >= x - 26 * sc && mouseX < x + 26 * sc && mouseY >= gy0 - 56 * sc && mouseY < gy + 2 && !vOpen;
+    gz[i] = sel === i ? Math.min(1, g + dtG / .9) : Math.max(0, g - dtG / .6); const walk = gz[i] !== g;
+    R(x - 26, gy0 - 2, 52, 4, '#f0b43c'); R(x - 24, gy0 + 2, 48, 3, '#7a1220');   /* la tarima queda vacía en su lugar */
     let face, tilt = 0;
     if (play) face = i === 1 ? -1 : 1;
     else if (sel >= 0) face = Math.sign(SL[sel] - SL[i]) || 1;
     else { face = i === 0 ? (r < .65 ? 1 : -1) : i === 1 ? (r < .65 ? -1 : 1) : (r < .5 ? 1 : -1); tilt = r2 < .22 ? -1 : r2 > .78 ? 1 : 0; }
-    if (a > .05) beam(x, 40, x + 2, gy + 8, 5, 26, '#ffe08a', .24 * a);
-    drawChar(i, x, gy, sc, t, i * .33, { play, eu, tilt, face, hop: hopH(i) });
+    if (a > .05 || g > .05) beam(x, 40, x + 2, gy + 8, 5, 26, '#ffe08a', .24 * Math.max(a, g * .6));
+    drawChar(i, x, gy, sc, t, i * .33, { play, eu, tilt, face, hop: hopH(i), walk });
     if (play) { spark(zx - 118, gy0 + 16); spark(zx + 118, gy0 + 16); if (Math.random() < .07) note(x + face * 30 * sc, gy - 34 * sc); if (Math.floor(t * 10 + i) % 3 === 0) { const sx = x + (Math.random() < .5 ? -1 : 1) * (24 + Math.random() * 30), sy = gy - 20 - Math.random() * 50; R(sx, sy - 2, 1, 5, '#ffe08a'); R(sx - 2, sy, 5, 1, '#ffe08a'); } }
     const by = gy - Math.round(64 * sc) + Math.round(Math.sin(t * 4 + i) * 2); R(x - 7, by, 14, 9, play ? '#f7ebc8' : '#f0b43c'); txt('P' + (SL[i] + 2), x, by + 1, '#14091a', 8, 'center'); R(x - 2, by + 9, 4, 2, play ? '#f7ebc8' : '#f0b43c'); R(x - 1, by + 11, 2, 1, play ? '#f7ebc8' : '#f0b43c');
     if (say[i] > 0) bubble(x - face * 30, gy - Math.round(50 * sc), sayT[i]);
@@ -818,7 +819,7 @@ function propsContacto(zx, t) {
 
 /* ---------- público (primer plano, parallax 1.5) ---------- */
 let cm = .45, dtG = .016;
-const gz = [0, 0, 0];
+const gz = [0, 0, 0], hovC = [false, false, false];
 function drawCrowd(t) {
   const o = -mod(camX * 1.5, 128), spec = [[4, 22, 15, '#0a0612'], [27, 26, 17, '#12091c'], [52, 20, 14, '#0a0612'], [75, 28, 16, '#190d26'], [100, 22, 15, '#0a0612']];
   const bot = h;
@@ -857,7 +858,7 @@ function frame(ts) {
   if (Math.abs(camX) > W * 6) { camX -= Math.sign(camX) * W * 4; tz -= Math.sign(tz) * Z * 4; }
   if (introGo && introT < 1) { introT = Math.min(1, introT + dt / (reduce ? .01 : 1.7)); if (introT >= 1) { started = true; document.body.classList.remove('intro'); } }
   P = blend(); fy = Math.round(h * P.floor); focal = Math.round(w * P.focal);
-  for (let i = 0; i < 3; i++) { act[i] += ((sel === i ? 1 : 0) - act[i]) * (1 - Math.exp(-dt * (reduce ? 60 : 9))); hop[i] = Math.max(0, hop[i] - dt); say[i] = Math.max(0, say[i] - dt); }
+  for (let i = 0; i < 3; i++) { act[i] += ((sel === i && gz[i] >= .999 ? 1 : 0) - act[i]) * (1 - Math.exp(-dt * (reduce ? 60 : 9))); hop[i] = Math.max(0, hop[i] - dt); say[i] = Math.max(0, say[i] - dt); }
   const base = camX; settled = Math.abs(base - tz * ZW) < 24;
   const panT = (!mobile && sel >= 0 && mod(tz, Z) === 4) ? PANDIR[sel] * Math.round(Math.min(400, innerWidth * .34) / 2 / ps) : 0;
   panX += (panT - panX) * (1 - Math.exp(-dt * (reduce ? 60 : 5))); camX = base + Math.round(panX);
@@ -954,15 +955,15 @@ const castBtns = $$('.cbtn[data-char]'), infos = $$('.info'), zBanda = $('#z-ban
 /* Audios largos de cada integrante tocando (null = suena un sonido sintetizado en loop).
    0 = Medrano (bajo) · 1 = Nieva (guitarra) · 2 = Maurel (batería). Ej: 0: 'assets/audio/medrano-bajo.mp3' */
 const MEMBER_AUDIO = { 0: null, 1: null, 2: null }, MKIND = ['bass', 'guitar', 'drums'];
-let mAud = null, mTimer = 0;
-function stopMember() { if (mAud) { mAud.pause(); mAud = null; } clearInterval(mTimer); mTimer = 0; }
+let mAud = null, mTimer = 0, mDelay = 0;
+function stopMember() { clearTimeout(mDelay); if (mAud) { mAud.pause(); mAud = null; } clearInterval(mTimer); mTimer = 0; }
 function playMember(i) {
   stopMember(); if (!initAC()) return; const f = MEMBER_AUDIO[i];
   if (f) { mAud = new Audio(f); mAud.loop = true; mAud.play().catch(() => {}); }
   else { synth(MKIND[i]); mTimer = setInterval(() => synth(MKIND[i]), 1600); }
 }
 function selectChar(i) {
-  if (i === sel) i = -1; sel = i; if (i >= 0) playMember(i); else stopMember();
+  if (i === sel) i = -1; sel = i; stopMember(); if (i >= 0) { initAC(); mDelay = setTimeout(() => { if (sel === i) playMember(i); }, 900); }   /* la música entra cuando llega al frente */
   if (i >= 0) { hop[i] = .45; say[i] = .9; sayT[i] = 'OK!'; sfx('blip'); }
   infos.forEach(el => { const on = +el.dataset.char === i; el.classList.toggle('show', on); el.setAttribute('aria-hidden', on ? 'false' : 'true'); });
   castBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.char === i)));
