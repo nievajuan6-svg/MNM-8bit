@@ -1,0 +1,931 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>MNM Trío | Escenario 8-bit (prototipo 2)</title>
+<meta name="description" content="MNM Trío, jazz rock fusión desde Córdoba, Argentina. Prototipo 2: el escenario en 360°.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#14091a;--night:#1b1330;--navy:#1d2b5c;--blue:#3a64a8;--red:#c8282a;--red2:#7a1220;--red3:#4a0c1e;--orange:#e8742c;--gold:#f0b43c;--cream:#f7ebc8;--px:'Press Start 2P',monospace;--vt:'VT323',monospace}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--cream);font-family:var(--vt);-webkit-tap-highlight-color:transparent}
+a{color:inherit}
+#stage{position:fixed;left:0;top:0;image-rendering:pixelated;image-rendering:crisp-edges;display:block;z-index:0}
+.crt{position:fixed;inset:0;pointer-events:none;z-index:2;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.55) 100%)}
+.skip{position:absolute;left:-999px;top:8px;z-index:99;background:var(--gold);color:var(--ink);padding:8px 12px;font-family:var(--px);font-size:10px}
+.skip:focus{left:8px}
+
+/* ---------- HUD ---------- */
+.hud{position:fixed;z-index:5;transition:opacity .6s}
+body.intro .hud{opacity:0;pointer-events:none}
+.top{left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:linear-gradient(#14091add,#14091a00)}
+.logo{font-family:var(--px);font-size:14px;color:var(--cream);text-decoration:none;text-shadow:2px 2px 0 var(--red2);white-space:nowrap}
+.logo b{color:var(--gold)}
+.menu{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.menu a{font-family:var(--px);font-size:9px;text-decoration:none;padding:8px 9px;color:var(--cream);border:2px solid transparent;cursor:pointer;text-shadow:1px 1px 0 #000}
+.menu a:hover,.menu a:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+.menu a.on{background:var(--gold);color:var(--ink);text-shadow:none}
+.tools{display:flex;gap:8px;align-items:center}
+.deg{font-family:var(--px);font-size:9px;color:var(--gold);text-shadow:1px 1px 0 #000;white-space:nowrap}
+.sbtn{font-family:var(--px);font-size:9px;background:var(--ink);color:var(--cream);border:2px solid var(--cream);padding:8px 9px;cursor:pointer}
+.sbtn:hover{border-color:var(--gold);color:var(--gold)}
+.burger{display:none}
+.arrow{top:38%;width:44px;height:56px;display:grid;place-items:center;font-family:var(--px);font-size:18px;background:#14091acc;color:var(--gold);border:3px solid var(--gold);cursor:pointer}
+.arrow:hover{background:var(--gold);color:var(--ink)}
+.arrow.l{left:10px}.arrow.r{right:10px}
+.bottom{left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;font-size:18px;color:var(--cream);background:linear-gradient(#14091a00,#14091add);pointer-events:none}
+.bottom a{pointer-events:auto}
+.dots{display:flex;gap:6px}
+.dots i{width:12px;height:12px;border:2px solid var(--cream);background:transparent;display:block}
+.dots i.on{background:var(--gold);border-color:var(--gold)}
+.hint{font-family:var(--px);font-size:8px;color:var(--cream);opacity:.8}
+
+/* ---------- zonas y paneles ---------- */
+.zone{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .35s,visibility 0s .35s}
+.zone.on{opacity:1;visibility:visible;transition:opacity .45s .25s,visibility 0s}
+.panel{pointer-events:auto;position:absolute;background:#120a1c;border:4px solid var(--gold);padding:20px 22px 22px;font-size:21px;line-height:1.1;color:var(--cream);overflow:auto;scrollbar-width:thin;scrollbar-color:var(--gold) #120a1c;
+ clip-path:polygon(0 8px,8px 8px,8px 0,calc(100% - 8px) 0,calc(100% - 8px) 8px,100% 8px,100% calc(100% - 8px),calc(100% - 8px) calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,8px calc(100% - 8px),0 calc(100% - 8px))}
+.zone[data-side="L"] .panel,.zone[data-side="R"] .panel{top:50%;transform:translateY(-50%);width:min(560px,46vw);max-height:calc(100% - 170px)}
+.zone[data-side="L"] .panel{left:5vw}.zone[data-side="R"] .panel{right:5vw}
+.zone[data-side="C"] .panel{left:50%;transform:translateX(-50%);bottom:56px;width:min(1180px,94vw);max-height:48vh}
+.eyebrow{font-family:var(--px);font-size:9px;letter-spacing:.08em;color:var(--orange);margin:0 0 10px;text-transform:uppercase}
+h2{font-family:var(--px);font-size:clamp(14px,1.7vw,20px);line-height:1.35;margin:0 0 14px;color:var(--gold);text-shadow:3px 3px 0 var(--red2);font-weight:400}
+h3{font-family:var(--px);font-size:12px;line-height:1.4;font-weight:400;margin:0 0 6px;color:var(--cream)}
+p{margin:0 0 12px}
+.btn{display:inline-block;font-family:var(--px);font-size:10px;line-height:1.3;text-decoration:none;text-align:center;background:var(--cream);color:var(--ink);padding:12px 14px;border:3px solid var(--ink);box-shadow:0 4px 0 var(--red2),0 0 0 3px var(--cream);cursor:pointer;margin:4px 8px 8px 3px}
+.btn:hover,.btn:focus-visible{transform:translateY(2px);box-shadow:0 2px 0 var(--red2),0 0 0 3px var(--gold);outline:none;background:var(--gold)}
+.btn.alt{background:transparent;color:var(--cream);border-color:var(--cream);box-shadow:none}
+.btn.alt:hover{background:var(--cream);color:var(--ink)}
+.facts{margin:6px 0 0;padding:0;list-style:none;border-top:3px dotted #f0b43c66}
+.facts li{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-bottom:3px dotted #f0b43c66}
+.facts b{font-weight:400;color:var(--gold)}.facts span{text-align:right}
+.cards{display:grid;gap:14px;grid-template-columns:repeat(3,1fr)}
+.card{background:#1d1230;border:3px solid #f0b43c88;padding:12px 14px}
+.card .role{font-family:var(--px);font-size:9px;color:var(--orange);margin-bottom:6px}
+.card p{margin:0;font-size:21px}
+.card .credits{font-size:18px;opacity:.8;margin-top:8px}
+.pick{cursor:pointer;transition:transform .15s,border-color .15s}
+.pick:hover,.pick:focus-within,.pick.sel{border-color:var(--gold);transform:translateY(-4px);background:#2a1740}
+.pick .ok{font-family:var(--px);font-size:11px;color:var(--gold);display:block;margin-top:8px;opacity:0}
+.pick:hover .ok,.pick.sel .ok{opacity:1}
+.vframe{position:relative;aspect-ratio:16/9;background:#000;border:3px solid var(--cream);margin-bottom:10px}
+.vframe iframe,.vframe button{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
+.vframe button{padding:0;background:#000;cursor:pointer}
+.vframe img{width:100%;height:100%;object-fit:cover;opacity:.85;display:block}
+.vframe .play{position:absolute;left:50%;top:50%;width:48px;height:48px;margin:-24px 0 0 -24px;background:var(--red);border:3px solid var(--cream);display:grid;place-items:center;font-family:var(--px);font-size:14px;color:var(--cream);padding-left:3px}
+.vframe button:hover img{opacity:1}
+.carousel{position:relative}
+.cview{overflow:hidden;border:3px solid var(--cream);background:#000}
+.ctrack{display:flex;transition:transform .5s steps(8)}
+.cslide{min-width:100%;margin:0;aspect-ratio:4/3;position:relative;background:#000}
+.cslide img{width:100%;height:100%;object-fit:contain;display:block}
+.cslide figcaption{position:absolute;left:0;right:0;bottom:0;padding:18px 12px 8px;background:linear-gradient(#0000,#000c);font-size:20px}
+.crow{display:flex;align-items:center;justify-content:space-between;margin-top:10px;gap:10px}
+.crow .mono{font-family:var(--px);font-size:9px}
+.rider{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.rider div{border:3px solid #f0b43c66;padding:8px 10px;background:#1d1230}
+.rider strong{display:block;font-family:var(--px);font-size:9px;color:var(--orange);font-weight:400;margin-bottom:4px}
+table{width:100%;border-collapse:collapse;font-size:20px;margin-top:8px}
+th{font-family:var(--px);font-size:8px;color:var(--gold);text-align:left;font-weight:400;padding:8px;border-bottom:3px solid var(--gold)}
+td{padding:6px 8px;border-bottom:2px dotted #f0b43c55;vertical-align:top}
+.links{display:grid;gap:8px;margin-top:6px}
+.links a{display:block;text-decoration:none;padding:8px 10px;border:3px solid #f0b43c55;background:#1d1230}
+.links a:hover,.links a:focus-visible{border-color:var(--gold);background:#2a1740;outline:none}
+.links small{opacity:.8;font-size:19px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+label{display:block;font-family:var(--px);font-size:8px;color:var(--gold);margin:0 0 6px}
+input,textarea{width:100%;background:#0a0614;color:var(--cream);border:3px solid var(--cream);padding:8px;font:inherit;font-size:22px;margin-bottom:12px;border-radius:0}
+input:focus,textarea:focus{outline:none;border-color:var(--gold)}
+textarea{min-height:92px;resize:vertical}
+.help{font-size:18px;opacity:.8;margin:6px 0 0}
+.status{min-height:1.2em;color:var(--gold);font-size:20px}
+.row{display:flex;flex-wrap:wrap;align-items:center}
+
+/* ---------- hero ---------- */
+.zone[data-side="H"] .hero{position:absolute;left:0;right:0;top:13%;text-align:center;pointer-events:none;padding:0 14px}
+.hero *{pointer-events:auto}
+.hero .eyebrow{color:var(--cream);text-shadow:2px 2px 0 #000;font-size:10px;margin-bottom:18px}
+.title{margin:0;font-family:var(--px);font-weight:400;line-height:.95;color:var(--cream);font-size:clamp(42px,10vw,132px);-webkit-text-stroke:.045em var(--ink);paint-order:stroke fill;text-shadow:.05em .05em 0 var(--orange),.1em .1em 0 var(--red),.15em .15em 0 var(--red3)}
+.title small{display:block;font-size:.3em;letter-spacing:.7em;margin:.25em 0 0 .7em;color:var(--gold);text-shadow:.12em .12em 0 var(--red2)}
+.lead{font-family:var(--px);font-size:clamp(9px,1.1vw,13px);line-height:1.8;margin:10px auto 8px;max-width:620px;text-shadow:2px 2px 0 #000}
+.actions{display:none}
+body:not(.intro) .actions{display:block}
+#start{display:none}
+body.intro #start{display:inline-block;font-size:14px;animation:blink 1s steps(2) infinite;margin-top:16px}
+@keyframes blink{50%{opacity:.25}}
+body.intro .hero .lead{display:none}
+@media (min-width:761px){body:not(.intro) .zone[data-side="H"] .hero{top:11%}}
+
+
+/* ---------- interacción en escena ---------- */
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+a.sr:focus{width:auto;height:auto;clip:auto;left:50%;top:64px;transform:translateX(-50%);z-index:9;background:var(--gold);color:var(--ink);padding:8px 12px;font-family:var(--px);font-size:10px;pointer-events:auto}
+.stagehint{position:absolute;left:0;right:0;bottom:104px;text-align:center;margin:0;font-family:var(--px);font-size:10px;color:var(--gold);text-shadow:2px 2px 0 #000;animation:blink 1.4s steps(2) infinite;pointer-events:none}
+.cast{position:absolute;left:0;right:0;bottom:56px;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;pointer-events:none}
+.cbtn{pointer-events:auto;font-family:var(--px);font-size:9px;background:#14091add;color:var(--cream);border:3px solid var(--cream);padding:9px 10px;cursor:pointer}
+.cbtn:hover,.cbtn:focus-visible{border-color:var(--gold);color:var(--gold);outline:none}
+.cbtn[aria-pressed="true"]{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.tip{font-family:var(--px);font-size:9px;line-height:1.8;color:var(--gold);border:3px dashed #f0b43c88;padding:8px 10px;margin:0 0 12px}
+.card.glow{border-color:var(--gold);background:#2a1740}
+.zone[data-side="C"] .panel.info{left:auto;right:auto;top:50%;bottom:auto;width:min(400px,34vw);max-height:72vh;opacity:0;visibility:hidden;pointer-events:none;transform:translate(var(--dx),-50%);transition:opacity .2s,transform .2s,visibility 0s .2s}
+.zone[data-side="C"] .panel.info.R{right:3vw;--dx:40px}
+.zone[data-side="C"] .panel.info.L{left:3vw;--dx:-40px}
+.zone[data-side="C"] .panel.info.show{opacity:1;visibility:visible;pointer-events:auto;transform:translate(0,-50%);transition:opacity .3s steps(4),transform .3s steps(4),visibility 0s}
+.info .x{position:absolute;right:8px;top:8px;font-family:var(--px);font-size:10px;background:var(--ink);color:var(--cream);border:2px solid var(--cream);padding:6px 8px;cursor:pointer}
+.info .x:hover{border-color:var(--gold);color:var(--gold)}
+.info h2{padding-right:34px}
+.viewer{position:absolute;inset:0;pointer-events:auto;background:rgba(10,6,20,0)}
+.viewer[hidden]{display:none}
+.zone[data-side] .viewer .vpanel{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(580px,92vw);max-height:calc(100% - 70px)}
+.vmask{position:fixed;pointer-events:none;image-rendering:pixelated;z-index:3}
+
+/* ---------- móvil ---------- */
+@media (max-width:760px){
+ .top{padding:8px 10px}.logo{font-size:11px}
+ .menu{display:none;position:absolute;left:8px;right:8px;top:48px;background:#120a1c;border:3px solid var(--gold);padding:8px;flex-direction:column;align-items:stretch;gap:0;max-height:70vh;overflow:auto}
+ .menu.open{display:flex}.menu a{padding:12px 10px;font-size:10px}
+ .burger{display:block}.deg{display:none}
+ .zone[data-side] .panel{left:8px;right:8px;top:auto;bottom:34px;transform:none;width:auto;max-height:57vh;padding:16px 16px 18px;font-size:21px}
+ .zone[data-side="C"] .panel{left:8px;right:8px;transform:none;width:auto;bottom:34px;max-height:57vh}
+ .cards{grid-template-columns:1fr}.two{grid-template-columns:1fr}.rider{grid-template-columns:1fr}
+ .arrow{top:15%;width:36px;height:44px;font-size:14px}.arrow.l{left:4px}.arrow.r{right:4px}
+ .bottom{padding:6px 10px 8px;justify-content:center}.bottom>span{display:none}.hint{display:none}
+ .hero .eyebrow{line-height:1.7;margin-bottom:22px;font-size:9px}
+ .zone[data-side="H"] .hero{top:11%}
+ .zone[data-side="C"] .panel.info,.zone[data-side="C"] .panel.info.R,.zone[data-side="C"] .panel.info.L{left:8px;right:8px;top:auto;bottom:34px;width:auto;max-height:42vh;transform:translate(0,30px)}
+ .zone[data-side="C"] .panel.info.show{transform:none}
+ .zone.has-sel .cast{display:none}
+ .stagehint{bottom:84px;font-size:9px}.cast{bottom:42px}
+}
+@media (prefers-reduced-motion:reduce){body.intro #start{animation:none}.zone,.zone.on{transition:none}}
+noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--ink);padding:20px;text-align:center;font-size:26px}
+</style>
+</head>
+<body class="intro">
+<a class="skip" href="#z-sobre">Ir al contenido</a>
+<canvas id="stage" aria-hidden="true"></canvas>
+<div class="crt" aria-hidden="true"></div>
+
+<header class="hud top">
+  <a class="logo" href="#inicio" data-go="inicio" aria-label="MNM Trío, inicio">MNM<b>·</b>TRÍO</a>
+  <nav class="menu" id="menu" aria-label="Zonas del escenario">
+    <a href="#sobre" data-go="sobre">Propuesta</a><a href="#musica" data-go="musica">Música</a><a href="#galeria" data-go="galeria">Fotos</a><a href="#banda" data-go="banda">Banda</a><a href="#rider" data-go="rider">Rider</a><a href="#recursos" data-go="recursos">Material</a><a href="#contacto" data-go="contacto">Booking</a>
+  </nav>
+  <div class="tools"><span class="deg" id="deg" aria-hidden="true">000°</span><button class="sbtn" id="snd" type="button" aria-pressed="false">♪ NO</button><button class="sbtn burger" id="burger" type="button" aria-expanded="false" aria-controls="menu">☰</button></div>
+</header>
+<button class="hud arrow l" id="prev" type="button" aria-label="Zona anterior">◀</button>
+<button class="hud arrow r" id="next" type="button" aria-label="Zona siguiente">▶</button>
+<footer class="hud bottom"><span>MNM Trío · Córdoba, Argentina · <a href="mailto:mnmtrio.contacto@gmail.com">mnmtrio.contacto@gmail.com</a></span><div class="dots" id="dots" aria-hidden="true"></div><span class="hint">← → / SCROLL / DESLIZÁ</span></footer>
+
+<main id="main">
+<!-- 0 INICIO -->
+<section class="zone on" id="z-inicio" data-id="inicio" data-side="H" aria-label="Inicio">
+  <div class="hero">
+    <div class="eyebrow">Sierras chicas · Córdoba, Argentina</div>
+    <h1 class="title">MNM<small>TRÍO</small></h1>
+    <p class="lead">Instrumental - Jazz - Rock - Original - Improvisación</p>
+    <button class="btn" id="start" type="button">▶ PRESS START</button>
+    <div class="actions"><a class="btn" href="#musica" data-go="musica">Ver videos</a><a class="btn alt" href="#contacto" data-go="contacto">Contrataciones</a></div>
+  </div>
+</section>
+
+<!-- 1 SOBRE -->
+<section class="zone" id="z-sobre" data-id="sobre" data-side="R" aria-label="La propuesta">
+  <div class="panel">
+    <div class="eyebrow">· La propuesta</div>
+    <h2>SOBRE MNM TRÍO</h2>
+    <p>MNM Trío es una formación instrumental de Córdoba, Argentina, que explora el jazz contemporáneo y la improvisación desde un lenguaje abierto, dinámico y expresivo.</p>
+    <p>Integrado por Álvaro Medrano en bajo, Juan Nieva en guitarra y André Maurel en batería, el trío reúne recorridos por el jazz, el rock, el folklore y la música latinoamericana.</p>
+    <p>La propuesta funciona en escenarios de escucha, festivales, salas, galerías, espacios culturales y eventos que buscan un show instrumental con intensidad y adaptación al lugar.</p>
+    <ul class="facts"><li><b>Formación</b><span>Trío instrumental</span></li><li><b>Duración</b><span>50-70 minutos</span></li><li><b>Formato</b><span>Acústico o amplificado</span></li><li><b>Base</b><span>Córdoba, Argentina</span></li><li><b>Ideal para</b><span>Festivales, salas y eventos culturales</span></li></ul>
+  </div>
+</section>
+
+<!-- 2 MÚSICA -->
+<section class="zone" id="z-musica" data-id="musica" data-side="C" aria-label="Escuchanos">
+  <div class="panel">
+    <div class="eyebrow">· escuchanos</div>
+    <div class="row" style="justify-content:space-between"><h2>Producciones Audiovisuales</h2><a class="btn alt" href="https://www.youtube.com/@MNM.Tr%C3%ADo" target="_blank" rel="noopener">Canal de YouTube ↗</a></div>
+    <div class="cards">
+      <article class="card"><div class="vframe" data-yt="z4h0FmdXn4w"><button type="button" data-title="MNM Trío - ATENTO" aria-label="Reproducir: ATENTO"><img src="https://i.ytimg.com/vi/z4h0FmdXn4w/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Original · MNM Trío</div><h3>ATENTO</h3><p>Tema original de MNM Trío.</p><div class="credits">Video y edición: Esteban Camandone<br>Grabación, mezcla y mastering: Tomás Cerrada</div></article>
+      <article class="card"><div class="vframe" data-yt="i4ovNNF43do"><button type="button" data-title="MNM Trío - Tordo músico" aria-label="Reproducir: Tordo músico"><img src="https://i.ytimg.com/vi/i4ovNNF43do/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Diego Schissi</div><h3>Tordo músico</h3><p>Obra de Diego Schissi interpretada por MNM Trío.</p><div class="credits">Batería: André Maurel · Guitarra: Juan Nieva · Bajo: Álvaro Medrano</div></article>
+      <article class="card"><div class="vframe" data-yt="EPgMi-vJnwY"><button type="button" data-title="MNM Trío - Brooklyn high" aria-label="Reproducir: Brooklyn high"><img src="https://i.ytimg.com/vi/EPgMi-vJnwY/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Nelson Faria</div><h3>Brooklyn high</h3><p>Obra del músico brasilero Nelson Faria interpretada por MNM Trío.</p><div class="credits">Batería: André Maurel · Guitarra: Juan Nieva · Bajo: Álvaro Medrano</div></article>
+    </div>
+  </div>
+</section>
+
+<!-- 3 FOTOS -->
+<section class="zone" id="z-galeria" data-id="galeria" data-side="L" aria-label="Fotos">
+  <p class="stagehint" id="hint-gal">▲ TOCÁ UN CUADRO PARA VERLO ▲</p>
+  <div class="cast" role="group" aria-label="Cuadros del archivo visual">
+    <button class="cbtn" type="button" data-ph="0" aria-label="Ver foto: formación completa en vivo">CUADRO 1</button><button class="cbtn" type="button" data-ph="1" aria-label="Ver foto: André Maurel, batería">CUADRO 2</button><button class="cbtn" type="button" data-ph="2" aria-label="Ver foto: Álvaro Medrano, bajo">CUADRO 3</button><button class="cbtn" type="button" data-ph="3" aria-label="Ver foto: Juan Nieva, guitarra">CUADRO 4</button>
+  </div>
+  <div class="viewer" id="viewer" hidden aria-hidden="true">
+    <div class="panel vpanel" role="dialog" aria-label="Visor de fotos">
+      <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">· Archivo visual</div><h2 style="margin:0 0 12px">Fotos</h2></div><button class="btn alt" id="vclose" type="button" aria-label="Cerrar visor" style="margin:0">✕</button></div>
+      <div class="carousel" aria-label="Galería de fotos">
+        <div class="cview"><div class="ctrack" id="ctrack">
+          <figure class="cslide"><img src="assets/images/hero/mnm-grupal.webp" alt="MNM Trío tocando en vivo"><figcaption>MNM Trío · formación completa en vivo</figcaption></figure>
+          <figure class="cslide"><img src="assets/images/members/mnm-maurel.webp" alt="André Maurel tocando batería"><figcaption>André Maurel · batería</figcaption></figure>
+          <figure class="cslide"><img src="assets/images/members/mnm-medrano.webp" alt="Álvaro Medrano tocando bajo"><figcaption>Álvaro Medrano · bajo</figcaption></figure>
+          <figure class="cslide"><img src="assets/images/members/mnm-nieva.webp" alt="Juan Nieva tocando guitarra"><figcaption>Juan Nieva · guitarra</figcaption></figure>
+        </div></div>
+        <div class="crow"><button class="btn alt" id="cprev" type="button" aria-label="Foto anterior">←</button><span class="mono" id="ccount" role="status" aria-live="polite">01 / 04</span><button class="btn alt" id="cnext" type="button" aria-label="Foto siguiente">→</button></div>
+      </div>
+    </div>
+    <canvas class="vmask" id="vmask" aria-hidden="true"></canvas>
+  </div>
+</section>
+
+<!-- 4 BANDA -->
+<section class="zone" id="z-banda" data-id="banda" data-side="C" aria-label="La banda">
+  <h2 class="sr">Integrantes</h2>
+  <p class="stagehint" id="hint-band">▼ TOCÁ A UN INTEGRANTE ▼</p>
+  <div class="cast" role="group" aria-label="Elegí un integrante">
+    <button class="cbtn" type="button" data-char="0" aria-pressed="false">P1 · MEDRANO</button><button class="cbtn" type="button" data-char="2" aria-pressed="false">P2 · MAUREL</button><button class="cbtn" type="button" data-char="1" aria-pressed="false">P3 · NIEVA</button>
+  </div>
+  <article class="panel info R" data-char="0"><button class="x" type="button" aria-label="Cerrar">✕</button><div class="eyebrow">· La banda · P1 · Bajo</div><h2>Álvaro Medrano</h2><p>Bajista y compositor. Su lenguaje combina inventiva rítmica y construcción de climas entre el baile, el movimiento y la exploración sonora.</p></article>
+  <article class="panel info R" data-char="2"><button class="x" type="button" aria-label="Cerrar">✕</button><div class="eyebrow">· La banda · P2 · Batería</div><h2>André Maurel</h2><p>Baterista y compositor. Su versatilidad rítmica y sensibilidad creativa convierten la batería en un motor expresivo.</p></article>
+  <article class="panel info L" data-char="1"><button class="x" type="button" aria-label="Cerrar">✕</button><div class="eyebrow">· La banda · P3 · Guitarra</div><h2>Juan Nieva</h2><p>Guitarrista, productor y docente digital. Recorre folklore, rock, tango y jazz con soltura, creador de JNGuitarra.com su escuela digital.</p></article>
+</section>
+
+<!-- 5 RIDER -->
+<section class="zone" id="z-rider" data-id="rider" data-side="L" aria-label="Producción">
+  <div class="panel">
+    <div class="eyebrow">· Producción</div>
+    <h2>La técnica</h2>
+    <p>Resumen de necesidades para una presentación de 50 a 70 minutos. El detalle completo está en el rider en PDF descargable.</p>
+    <p class="tip">▶ Tocá el flight case «RIDER PDF» del escenario para descargarlo. Tocá los canales de la consola para silenciarlos.</p>
+    <div class="rider">
+      <div><strong>Backline</strong>Batería completa, guitarra y bajo con amplificación y equipamiento de back line propios.</div>
+      <div><strong>PA</strong>Sistema orientativo desde 300 W RMS, a confirmar según aforo y venue.</div>
+      <div><strong>Monitoreo</strong>3 monitores, uno por músico, con 220v.</div>
+      <div><strong>Formato</strong>Acústico o amplificado, adaptable al espacio.</div>
+    </div>
+    <table><thead><tr><th>Canal</th><th>Fuente</th><th>Conexión</th></tr></thead><tbody>
+      <tr><td>01-06</td><td>Bombo, redoblante, toms, OH L / OH R</td><td>Micrófonos</td></tr>
+      <tr><td>07</td><td>Bajo</td><td>DI</td></tr>
+      <tr><td>08</td><td>Guitarra</td><td>Mic o DI</td></tr>
+      <tr><td>09-10</td><td>Voces opcionales, si el repertorio o la producción las requiere</td><td>Micrófonos</td></tr>
+    </tbody></table>
+  </div>
+  <a class="sr" href="rider-tecnico-mnm.pdf" download>Descargar rider PDF</a>
+</section>
+
+<!-- 6 MATERIAL -->
+<section class="zone" id="z-recursos" data-id="recursos" data-side="R" aria-label="Material">
+  <div class="panel">
+    <div class="eyebrow">· Material importante</div>
+    <h2>Necesarios para la producción</h2>
+    <p>Accesos directos para conocernos, programar y coordinar tu evento.</p>
+    <p class="tip">▶ Tocá los objetos de la mesa del escenario: la carpeta, el dossier y el rider.</p>
+    <div class="cards" style="grid-template-columns:1fr">
+      <article class="card"><div class="role">Prensa</div><h3>Carpeta completa</h3><p>Fotos, videos y material de prensa para programadores y medios.</p></article>
+      <article class="card"><div class="role">EPK</div><h3>Dossier PDF</h3><p>Presentación descargable de prensa.</p></article>
+      <article class="card"><div class="role">Producción</div><h3>Rider técnico</h3><p>Stage plot, necesidades de PA, monitoreo e input list para el equipo técnico.</p></article>
+    </div>
+  </div>
+  <a class="sr" href="https://drive.google.com/drive/folders/1pYYdS91ni0eL767dDGwYZU3x_s9TMLy6?usp=drive_link" target="_blank" rel="noopener">Abrir carpeta de prensa en Drive</a><a class="sr" href="Dossier%20MNM.pdf" download>Descargar dossier PDF</a><a class="sr" href="rider-tecnico-mnm.pdf" download>Descargar rider PDF</a>
+</section>
+
+<!-- 7 CONTACTO -->
+<section class="zone" id="z-contacto" data-id="contacto" data-side="C" aria-label="Booking">
+  <div class="panel">
+    <div class="eyebrow">· Booking</div>
+    <h2>CONTACTANOS PARA TU EVENTO</h2>
+    <div class="two">
+      <div>
+        <div class="eyebrow">Canales oficiales</div>
+        <div class="links">
+          <a href="mailto:mnmtrio.contacto@gmail.com">mnmtrio.contacto@gmail.com</a>
+          <a href="https://wa.me/5493513257614" target="_blank" rel="noopener">André Maurel · WhatsApp ↗<br><small>+54 9 3513 25-7614</small></a>
+          <a href="https://wa.me/5493543516109" target="_blank" rel="noopener">Juan Nieva · WhatsApp ↗<br><small>+54 3 5435 16109</small></a>
+          <a href="https://wa.me/5493513874864" target="_blank" rel="noopener">Álvaro Medrano · WhatsApp ↗<br><small>+54 9 3513 87-4864</small></a>
+          <a href="https://www.youtube.com/@MNM.Tr%C3%ADo" target="_blank" rel="noopener">YouTube · canal oficial ↗</a>
+          <a href="https://www.instagram.com/trio.mnm/" target="_blank" rel="noopener">Instagram · @trio.mnm ↗</a>
+          <a href="https://linktr.ee/mnm.trio" target="_blank" rel="noopener">Linktree · MNM Trío ↗</a>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow">Consulta de contratación</div>
+        <form id="booking">
+          <label for="f-name">Nombre / organización</label><input id="f-name" name="name" autocomplete="name" required>
+          <label for="f-email">Email</label><input id="f-email" name="email" type="email" autocomplete="email" required>
+          <label for="f-msg">Fecha, lugar y propuesta</label><textarea id="f-msg" name="message" required></textarea>
+          <button class="btn" type="submit">Preparar consulta por email →</button>
+          <p class="help">El botón abre tu aplicación de correo en otra ventana con el mensaje preparado para enviarlo.</p>
+          <p class="status" id="fstatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<noscript>Esta versión del sitio necesita JavaScript. Escribinos a mnmtrio.contacto@gmail.com</noscript>
+
+<script>
+(() => {
+'use strict';
+/* =====================================================================
+   MNM Trío · Prototipo 2 · escenario pixel-art en 360°
+   - Un canvas de baja resolución escalado sin suavizar (look 16-bit)
+   - El mundo es un anillo (8 zonas) y la cámara da la vuelta completa
+   ===================================================================== */
+const Z = 8, ZW = 320, W = Z * ZW;
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cv = $('#stage'), ctx = cv.getContext('2d', { alpha: false });
+let w = 0, h = 0, ps = 4, mobile = false;
+
+/* ---------- color ---------- */
+const hex = s => [parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)];
+const mix = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
+const css = a => `rgb(${a[0]},${a[1]},${a[2]})`;
+const lighter = a => mix(a, [255, 255, 255], .14), darker = a => mix(a, [0, 0, 0], .42);
+const mod = (a, n) => ((a % n) + n) % n;
+
+/* zonas: id, lado del panel, encuadre de cámara y paleta de la escenografía */
+const mk = (id, fd, fm, focal, top, bot, ca, cb, night) => ({ id, fd, fm, focal, top: hex(top), bot: hex(bot), ca: hex(ca), cb: hex(cb), night });
+const ZP = [
+  mk('inicio',   .80, .74, .50, '#2a0a18', '#5a1020', '#b02420', '#7e1522', 0),
+  mk('sobre',    .66, .36, .28, '#1a0f2e', '#3b1850', '#6a2a8a', '#431b66', 0),
+  mk('musica',   .66, .36, .50, '#0c1430', '#1d2b5c', '#2b4a96', '#1d3470', 0),
+  mk('galeria',  .66, .36, .50, '#2a1208', '#5a2a10', '#a8561e', '#7a3a14', 0),
+  mk('banda',    .44, .36, .50, '#2a0a18', '#5a1020', '#c8282a', '#7a1220', 0),
+  mk('rider',    .66, .36, .72, '#071a22', '#12404a', '#1f6e78', '#164e58', 0),
+  mk('recursos', .66, .36, .28, '#3a1408', '#8a3a14', '#e0702a', '#b04c1c', 0),
+  mk('contacto', .52, .38, .50, '#04030c', '#1a1030', '#2a1a4a', '#1a0f33', 1),
+];
+
+/* ---------- primitivas ---------- */
+const R = (x, y, ww, hh, c) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), Math.round(ww), Math.round(hh)); };
+function line(x0, y0, x1, y1, c, th = 1) {
+  x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+  const dx = Math.abs(x1 - x0), sx = x0 < x1 ? 1 : -1, dy = -Math.abs(y1 - y0), sy = y0 < y1 ? 1 : -1; let err = dx + dy, n = 0;
+  ctx.fillStyle = c;
+  for (;;) { ctx.fillRect(x0, y0, th, th); if ((x0 === x1 && y0 === y1) || n++ > 400) break; const e2 = 2 * err; if (e2 >= dy) { err += dy; x0 += sx; } if (e2 <= dx) { err += dx; y0 += sy; } }
+}
+let fontOK = false;
+function txt(s, x, y, c, size = 8, align = 'left') { ctx.font = `${size}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; ctx.textBaseline = 'top'; ctx.textAlign = align; ctx.fillStyle = c; ctx.fillText(s, Math.round(x), Math.round(y)); }
+function alpha(a, fn) { ctx.globalAlpha = a; fn(); ctx.globalAlpha = 1; }
+
+/* ---------- estado ---------- */
+let camX = 0, tz = 0, started = false, introT = 0, introGo = false, T = 0, fy = 0, focal = 0, P = null, vOpen = false, sel = -1, panX = 0;
+const sxw = wx => { let d = (wx - camX) % W; if (d > W / 2) d -= W; if (d < -W / 2) d += W; return Math.round(focal + d); };
+
+/* ---------- hotspots: objetos interactivos del escenario ---------- */
+let HS = [], hover = null, cp = -1, settled = true, mouseX = -999, mouseY = -999, curCur = '';
+const bumps = {};
+const bump = (k, d = .4) => { bumps[k] = T + d; };
+const bmp = k => Math.max(0, (bumps[k] || 0) - T);
+const shk = k => { const r = bmp(k); return r > 0 ? Math.round(Math.sin(T * 60) * Math.min(1, r * 4) * 2) : 0; };
+function hot(x, y, ww, hh, fn, label) { if (cp === mod(tz, Z) && settled && started && introT >= 1 && !vOpen) HS.push({ x: Math.round(x), y: Math.round(y), w: Math.round(ww), h: Math.round(hh), fn, label }); }
+const hit = (px, py) => { for (let i = HS.length - 1; i >= 0; i--) { const o = HS[i]; if (px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) return o; } return null; };
+function plate(cx, y, str, bg, fg, bd, sz = 8) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); lx = Math.max(2, Math.min(w - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
+function bubble(x, y, str) { plate(x, y, str, '#f7ebc8', '#14091a', '#14091a'); R(x - 2, y + 12, 4, 2, '#f7ebc8'); R(x - 1, y + 14, 2, 1, '#f7ebc8'); }
+const tag = (x, y, str) => plate(x, y, str, '#14091a', '#f0b43c', '#f0b43c', 6);
+const arrowDn = (x, y, c = '#f0b43c') => { R(x - 3, y, 7, 1, c); R(x - 2, y + 1, 5, 1, c); R(x - 1, y + 2, 3, 1, c); R(x, y + 3, 1, 1, c); };
+function drawHover() {
+  if (!hover) return; const o = hover, c = Math.floor(T * 4) % 2 ? '#ffe08a' : '#f0b43c', x = o.x, y = o.y, ww = o.w, hh = o.h;
+  [[x - 2, y - 2, 1, 1], [x + ww + 1, y - 2, -1, 1], [x - 2, y + hh + 1, 1, -1], [x + ww + 1, y + hh + 1, -1, -1]].forEach(([px, py, sx, sy]) => { R(sx > 0 ? px : px - 4, py, 5, 1, c); R(px, sy > 0 ? py : py - 4, 1, 5, c); });
+  if (o.label) { let ly = y - 17; if (ly < 14) ly = y + hh + 6; plate(x + ww / 2, ly, o.label, '#f0b43c', '#14091a', '#14091a'); }
+}
+const DL = { rider: 'rider-tecnico-mnm.pdf', dossier: 'Dossier%20MNM.pdf', drive: 'https://drive.google.com/drive/folders/1pYYdS91ni0eL767dDGwYZU3x_s9TMLy6?usp=drive_link', mail: 'mailto:mnmtrio.contacto@gmail.com' };
+function dl(k) { const a = document.createElement('a'); a.href = DL[k]; if (k === 'rider' || k === 'dossier') a.download = ''; if (k === 'drive') { a.target = '_blank'; a.rel = 'noopener'; } a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); }
+cv.addEventListener('mousemove', e => { mouseX = e.clientX / ps; mouseY = e.clientY / ps; });
+cv.addEventListener('mouseleave', () => { mouseX = mouseY = -999; });
+cv.addEventListener('click', e => { const o = hit(e.clientX / ps, e.clientY / ps); if (o) o.fn(); else if (sel >= 0 && mod(tz, Z) === 4) selectChar(-1); });
+function burst(x, y, n = 8) { for (let i = 0; i < n; i++) note(x + (Math.random() - .5) * 16, y); }
+function sfx(k) { if (!ac || !musicOn) return; const t0 = ac.currentTime;
+  if (k === 'amp') tone(98, t0, .3, 'sawtooth', .08, 55); else if (k === 'strum') [196, 246.9, 293.7, 392].forEach((f, i) => tone(f, t0 + i * .035, .6, 'triangle', .08));
+  else if (k === 'blip') tone(660, t0, .1, 'square', .05, 990); else if (k === 'off') tone(240, t0, .14, 'square', .05, 110); else if (k === 'ring') { tone(880, t0, .08, 'square', .04); tone(660, t0 + .1, .08, 'square', .04); tone(880, t0 + .2, .08, 'square', .04); } }
+
+function resize() {
+  mobile = innerWidth < 760;
+  ps = Math.max(2, Math.round(Math.min(innerHeight / 190, innerWidth / 190)));
+  w = Math.ceil(innerWidth / ps); h = Math.ceil(innerHeight / ps);
+  cv.width = w; cv.height = h; cv.style.width = w * ps + 'px'; cv.style.height = h * ps + 'px';
+  ctx.imageSmoothingEnabled = false;
+}
+function blend() {
+  const pos = mod(camX / ZW, Z), i0 = Math.floor(pos), f0 = pos - i0, f = f0 * f0 * (3 - 2 * f0), A = ZP[i0], B = ZP[(i0 + 1) % Z];
+  const L = (a, b) => a + (b - a) * f, fl = z => mobile ? z.fm : z.fd;
+  return { pos, top: mix(A.top, B.top, f), bot: mix(A.bot, B.bot, f), ca: mix(A.ca, B.ca, f), cb: mix(A.cb, B.cb, f), night: L(A.night, B.night), focal: mobile ? .5 : L(A.focal, B.focal), floor: L(fl(A), fl(B)) };
+}
+
+/* ---------- fotos pixeladas para los marcos ---------- */
+const PHOTOS = [['hero/mnm-grupal', 28, 36], ['members/mnm-maurel', 36, 26], ['members/mnm-medrano', 26, 38], ['members/mnm-nieva', 26, 38]].map(([p, fw, fh]) => {
+  const o = { fw, fh, cv: document.createElement('canvas'), ok: false }; o.cv.width = fw; o.cv.height = fh;
+  const im = new Image(); im.onload = () => {
+    const c = o.cv.getContext('2d'); c.imageSmoothingEnabled = true; const r = Math.max(fw / im.width, fh / im.height), dw = im.width * r, dh = im.height * r;
+    c.drawImage(im, (fw - dw) / 2, (fh - dh) / 2, dw, dh);
+    try { const d = c.getImageData(0, 0, fw, fh), ramp = ['#14091a', '#4a0c1e', '#a8201e', '#e8742c', '#f0b43c', '#f7ebc8'].map(hex);
+      for (let i = 0; i < d.data.length; i += 4) { const l = (d.data[i] * .3 + d.data[i + 1] * .59 + d.data[i + 2] * .11) / 255, k = Math.min(5, Math.floor(l * 6.2)), col = ramp[k]; d.data[i] = col[0]; d.data[i + 1] = col[1]; d.data[i + 2] = col[2]; }
+      c.putImageData(d, 0, 0);
+    } catch (e) { c.globalCompositeOperation = 'multiply'; c.fillStyle = '#f0a050'; c.fillRect(0, 0, fw, fh); }
+    o.ok = true;
+  };
+  im.src = `assets/images/${p}.webp`; return o;
+});
+
+/* =====================================================================
+   PERSONAJES (coordenadas locales: pies en 0,0; mirando a +x)
+   ===================================================================== */
+const CH = [
+  { name: 'Medrano', kind: 'bass',   skin: '#d9a06c', hair: '#2a1a14', beard: '#2a1a14', shirt: '#d9c9a3', shade: '#b8a780', pants: '#ece6d6', shoe: '#5a4632', body: '#6a2c12', neck: '#2a1a10', hairS: 'short' },
+  { name: 'Nieva',   kind: 'guitar', skin: '#e0a778', hair: '#4a2e1c', beard: '#4a2e1c', shirt: '#1d1826', shade: '#110d18', pants: '#33507f', shoe: '#0e0c10', body: '#1a1018', neck: '#3a2418', hairS: 'wavy' },
+  { name: 'Maurel',  kind: 'drums',  skin: '#d49a6a', hair: '#3a2418', beard: '#3a2418', shirt: '#e8e2d0', shade: '#c4bda8', pants: '#555e72', shoe: '#222', body: '#7a1220', neck: '#222', hairS: 'short' },
+];
+const act = [0, 0, 0], hop = [0, 0, 0], say = [0, 0, 0], sayT = ['', '', ''], PANDIR = [1, -1, 1];
+const hopH = i => hop[i] > 0 ? Math.sin(Math.PI * (1 - hop[i] / .45)) * 12 : 0;
+const hsh = n => { const v = Math.sin(n * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+function human(c, t, ph, o) {
+  const play = !!o.play, eu = o.eu || 0, tilt = o.tilt || 0, hopY = o.hop || 0;
+  const beat = (t * 2 + ph) % 1, nod = play && !eu ? (beat < .5 ? 0 : 1) : 0, fr = Math.floor(t * (4 + eu * 8) + ph * 2) % 2;
+  const br = !play && Math.sin(t * 1.6 + ph * 4) > .6 ? 1 : 0, bang = eu ? Math.round(Math.sin(t * 14 + ph) * 2 * eu) : 0;
+  const jump = -Math.round(eu * Math.abs(Math.sin(t * 8 + ph * 3)) * 15) - Math.round(hopY), drums = c.kind === 'drums';
+  const K = drums ? fn => { ctx.translate(0, -jump); fn(); ctx.translate(0, jump); } : fn => fn();
+  R(-11, -1, 22, 2, 'rgba(0,0,0,.4)');
+  ctx.translate(0, jump);
+  if (drums) {
+    K(() => { R(-21, -44, 1, 44, '#8a8a99'); R(19, -42, 1, 42, '#8a8a99'); R(-29, -28, 1, 28, '#8a8a99');
+      const hit = play && fr ? 1 : 0;
+      R(-30, -47 + hit, 18, 3, '#f0b43c'); R(-29, -48 + hit, 16, 1, '#ffe08a'); R(12, -45 + (1 - hit), 20, 3, '#e0a02c'); R(13, -46 + (1 - hit), 18, 1, '#ffe08a'); R(-34, -30, 10, 2, '#d99a2a'); });
+    R(-4, -15, 11, 5, c.pants); R(6, -15, 5, 14, c.pants); R(9, -3, 7, 3, c.shoe); R(-7, -14, 14, 3, '#222');
+  } else {
+    R(-5, -15, 4, 13, c.pants); R(1, -15, 4, 13, c.pants); R(-6, -3, 6, 3, c.shoe); R(0, -3, 8, 3, c.shoe);
+  }
+  /* torso */
+  R(-6, -30, 12, 15, c.shirt); R(4, -30, 2, 15, c.shade); R(-6, -16, 12, 1, '#222'); R(-1, -32, 3, 3, c.skin);
+  /* cabeza */
+  const hy = -42 + nod + br + (tilt > 0 ? 1 : 0) + bang;
+  R(-5, hy, 10, 10, c.skin); R(-6, hy + 4, 1, 3, c.skin);
+  if (c.hairS === 'wavy') { R(-6, hy - 2, 12, 5, c.hair); R(-7, hy + 1, 3, 11, c.hair); R(4, hy, 3, 6, c.hair); R(-8, hy + 8, 2, 4, c.hair); R(-3, hy - 3, 6, 2, c.hair); if (eu) R(-10, hy + 5 + Math.round(Math.sin(t * 14) * 3), 3, 8, c.hair); }
+  else { R(-5, hy - 1, 10, 4, c.hair); R(-6, hy, 1, 4, c.hair); R(4, hy + 2, 1, 2, c.hair); }
+  if (c.beard === c.hair && c.hairS !== 'wavy') { R(-4, hy + 6, 9, 4, c.beard); R(-1, hy + 8, 4, 1, eu > .3 ? '#7a1f1f' : c.skin); }
+  else { R(0, hy + 6, 5, 1, c.beard); R(-3, hy + 8, 7, 2, c.beard); }
+  const ey = hy + 4 - (tilt < 0 ? 1 : 0), ink = '#14091a';
+  if (eu > .3) { R(0, ey + 1, 2, 1, ink); R(3, ey + 1, 2, 1, ink); R(0, ey, 2, 1, c.hair); R(3, ey, 2, 1, c.hair); R(0, hy + 7, 4, 2, '#3a0a10'); }
+  else if (!play) { const lid = (t * .5 + ph * 3) % 1 > .94; R(0, ey + 1, 1, 1, ink); R(3, ey + 1, 1, 1, ink); R(0, ey + (lid ? 1 : 0), 2, 1, c.hair); R(3, ey + (lid ? 1 : 0), 2, 1, c.hair); }
+  else { R(0, hy + 4, 1, 2, ink); R(3, hy + 4, 1, 2, ink); R(0, hy + 3, 2, 1, c.hair); R(3, hy + 3, 2, 1, c.hair); }
+  /* instrumento y brazos */
+  if (drums) {
+    K(() => { R(-17, -28, 11, 8, '#7a1220'); R(-18, -27, 1, 6, '#c8c8d0'); R(-17, -29, 11, 1, '#f7ebc8'); R(6, -28, 11, 8, '#7a1220'); R(17, -27, 1, 6, '#c8c8d0'); R(6, -29, 11, 1, '#f7ebc8'); });
+    if (play) {
+      const sA = fr ? [-11, -27] : [-14, -34], sB = fr ? [12, -34] : [10, -27];
+      line(-5, -28, sA[0], sA[1], c.shirt, 3); line(5, -28, sB[0], sB[1], c.shirt, 3);
+      R(sA[0] - 1, sA[1] - 1, 3, 3, c.skin); R(sB[0] - 1, sB[1] - 1, 3, 3, c.skin);
+      line(sA[0], sA[1], sA[0] - 5, sA[1] - 5, '#e9d29a'); line(sB[0], sB[1], sB[0] + 5, sB[1] - 5, '#e9d29a');
+    } else {
+      const tp = (t * .6 + ph * 7) % 1 < .06 ? 2 : 0;
+      line(-5, -28, -9, -25 - tp, c.shirt, 3); R(-10, -26 - tp, 3, 3, c.skin); line(-9, -25 - tp, -15, -21 - tp, '#e9d29a');
+      line(5, -28, 9, -24, c.shirt, 3); R(8, -25, 3, 3, c.skin); line(9, -24, 15, -21, '#e9d29a');
+    }
+    K(() => { R(-7, -22, 14, 21, c.body); R(-9, -19, 18, 15, c.body); R(-6, -20, 12, 17, '#f7ebc8'); R(-8, -17, 16, 11, '#f7ebc8'); R(-9, -19, 1, 15, '#f0b43c'); R(8, -19, 1, 15, '#f0b43c');
+      R(-4, -16, 2, 7, '#a8201e'); R(2, -16, 2, 7, '#a8201e'); R(-3, -15, 6, 2, '#a8201e'); R(-1, -13, 2, 2, '#a8201e'); });
+  } else if (play) {
+    const bass = c.kind === 'bass', tip = bass ? [38, -38] : [33, -34], jig = fr ? 0 : 1;
+    line(3, -29, -3, -19, '#222');
+    const bc = c.body;
+    R(2, -23, 13, 11, bc); R(4, -24, 9, 13, bc); R(3, -22, 11, 1, c.kind === 'guitar' ? '#f7ebc8' : '#b86a2a'); R(3, -12, 11, 1, c.kind === 'guitar' ? '#f7ebc8' : '#b86a2a');
+    if (c.kind === 'guitar') { R(8, -19, 1, 5, '#000'); R(10, -19, 1, 5, '#000'); } else { R(5, -16, 6, 3, '#2a2a2a'); R(8, -20, 4, 2, '#d8d0b8'); }
+    line(14, -19, tip[0], tip[1] + 1, c.neck, 2); R(tip[0], tip[1] - 2, 4, 4, c.neck);
+    for (let k = 0; k < 5; k++) R(18 + k * (tip[0] - 18) / 5, -21 + k * (tip[1] + 21) / 5, 1, 1, '#d8d0b8');
+    const hx = 24 + (eu ? Math.round(Math.sin(t * 12) * 4) : 0), hyy = -21 + (hx - 14) * (tip[1] + 19) / (tip[0] - 14);
+    line(4, -28, 12, -22, c.shirt, 3); line(12, -22, hx, hyy, c.shirt, 3); R(hx - 1, hyy - 1, 3, 3, c.skin);
+    line(-2, -28, 5, -22, c.shirt, 3); line(5, -22, 8, -18 + jig * 3, c.shirt, 3); R(7, -19 + jig * 3, 3, 3, c.skin);
+  } else {
+    /* sin tocar: el instrumento apoyado, agarrado del mástil con una mano */
+    const bass = c.kind === 'bass', ix = 13, top = bass ? -54 : -49, bc = c.body, gt = c.kind === 'guitar';
+    R(ix - 1, -13, 13, 12, bc); R(ix + 1, -15, 9, 15, bc); R(ix + 1, -14, 9, 1, gt ? '#f7ebc8' : '#b86a2a');
+    if (gt) { R(ix + 4, -9, 3, 3, '#000'); } else { R(ix + 3, -8, 6, 2, '#2a2a2a'); }
+    R(ix + 4, top + 4, 2, -top - 17, c.neck); R(ix + 3, top, 4, 5, c.neck); R(ix + 3, top + 1, 1, 1, '#d8d0b8'); R(ix + 6, top + 3, 1, 1, '#d8d0b8');
+    line(4, -28, ix + 4, -27, c.shirt, 3); R(ix + 3, -29, 4, 4, c.skin);
+    line(-3, -28, -5, -17, c.shirt, 3); R(-6, -18, 3, 3, c.skin);
+  }
+  ctx.translate(0, -jump);
+}
+function drawChar(i, x, y, s, t, ph, o = {}) {
+  const c = CH[i], face = o.face || (i === 1 ? -1 : 1);
+  ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(s * face, s); human(c, t, ph, o); ctx.restore();
+}
+
+/* ---------- partículas (notas) ---------- */
+const notes = [];
+function note(x, y) { if (notes.length < 44) notes.push({ x, y, vx: (Math.random() - .5) * 12, vy: -(14 + Math.random() * 14), life: 1.6, c: ['#f0b43c', '#f7ebc8', '#e8742c'][Math.floor(Math.random() * 3)] }); }
+function drawNotes(dt) {
+  for (let i = notes.length - 1; i >= 0; i--) { const n = notes[i]; n.life -= dt; n.x += n.vx * dt; n.y += n.vy * dt; if (n.life <= 0) { notes.splice(i, 1); continue; }
+    alpha(Math.min(1, n.life), () => { R(n.x, n.y + 6, 4, 3, n.c); R(n.x + 3, n.y, 1, 7, n.c); R(n.x + 3, n.y, 3, 2, n.c); }); }
+}
+
+/* =====================================================================
+   CAPAS
+   ===================================================================== */
+function drawBackdrop() {
+  R(0, 0, w, h, '#14091a');
+  const steps = 10;
+  for (let i = 0; i < steps; i++) { const y0 = Math.floor(fy * i / steps), y1 = Math.floor(fy * (i + 1) / steps); R(0, y0, w, y1 - y0 + 1, css(mix(P.top, P.bot, i / (steps - 1)))); }
+  /* noche: estrellas + skyline */
+  if (P.night > .02) {
+    const o = -mod(camX * .25, 128);
+    alpha(P.night, () => {
+      for (let x = o - 128; x < w; x += 128) for (let k = 0; k < 9; k++) { const sx = x + (k * 53 + 17) % 128, sy = 8 + (k * 37) % Math.max(20, fy - 60), tw = Math.sin(T * 2 + k * 1.7 + x) > .2; R(sx, sy, 1, 1, tw ? '#f7ebc8' : '#8a7fb0'); }
+      const o2 = -mod(camX * .5, 128), bh = [38, 58, 30, 70, 46, 34, 62, 44];
+      for (let x = o2 - 128; x < w; x += 128) for (let k = 0; k < 4; k++) { const bx = x + k * 32, hh = bh[(k * 2 + Math.floor(mod(camX * .5, 1280) / 128) + 1) % 8] + 0, by = fy - hh;
+        R(bx, by, 28, hh, '#0a0618'); for (let wy = by + 5; wy < fy - 4; wy += 7) for (let wx = bx + 4; wx < bx + 24; wx += 7) if (((wx * 7 + wy * 3 + k) % 5) > 1) R(wx, wy, 2, 3, ((wx + wy) % 3 === 0) ? '#f0b43c' : '#f7ebc8'); }
+    });
+  }
+  /* cortinas con pliegues (parallax .25) */
+  const a = 1 - P.night * .85, o = -mod(camX * .25, 32), c0 = css(P.ca), c1 = css(lighter(P.ca)), c3 = css(P.cb);
+  ctx.globalAlpha = a;
+  for (let x = o - 32; x < w; x += 32) { R(x, 0, 8, fy, c0); R(x + 8, 0, 6, fy, c1); R(x + 14, 0, 10, fy, c0); R(x + 24, 0, 8, fy, c3); }
+  for (let i = 0; i < 4; i++) { ctx.globalAlpha = a * .13; R(0, fy - 22 + i * 6, w, 6, '#000'); }
+  ctx.globalAlpha = 1;
+  /* friso superior */
+  const dk = css(darker(P.cb));
+  R(0, 0, w, 11, dk); R(0, 11, w, 1, '#f0b43c');
+  for (let x = -mod(camX * .25, 16) - 16; x < w; x += 16) { R(x, 12, 16, 3, dk); R(x + 2, 15, 12, 2, dk); R(x + 5, 17, 6, 1, dk); R(x + 7, 17, 2, 2, '#f0b43c'); }
+}
+function drawTruss() {
+  const o = -mod(camX * .5, 64), base = Math.floor(camX * .5 / 64), cols = ['#f0b43c', '#c8282a', '#3a64a8', '#f7ebc8'];
+  R(0, 22, w, 3, '#2a2438'); R(0, 34, w, 2, '#2a2438'); R(0, 22, w, 1, '#4a4260');
+  for (let x = o - 64; x < w; x += 16) for (let i = 0; i < 8; i++) { R(x + i, 25 + i, 1, 1, '#4a4260'); R(x + 8 + i, 33 - i, 1, 1, '#4a4260'); }
+  for (let n = 0, x = o - 64; x < w + 64; x += 64, n++) { const cx = x + 32, col = cols[mod(base + n - 1, 4)]; R(cx - 3, 36, 7, 5, '#14091a'); R(cx - 2, 41, 5, 2, col); alpha(.35, () => R(cx - 5, 43, 11, 2, col)); }
+}
+function drawFloor() {
+  const fh = 38, top = fy;
+  R(0, top, w, fh, '#a8672e'); R(0, top, w, 2, '#c98a4a');
+  const o = -mod(camX, 32);
+  for (let r = 0; r < 4; r++) { const y = top + 2 + r * 9; R(0, y + 8, w, 1, '#7e4a22'); for (let x = o - 32 + (r * 11) % 32; x < w; x += 32) R(x, y, 1, 9, '#7e4a22'); }
+  for (let i = 0; i < 3; i++) { alpha(.1, () => R(0, top + 2 + i * 8, w, 8, '#fff')); }
+  R(0, top + fh, w, 2, '#f0b43c'); R(0, top + fh + 2, w, 9, '#5a3218'); R(0, top + fh + 11, w, 2, '#3a200e');
+  const bo = -mod(camX, 16);
+  for (let x = bo - 16, n = 0; x < w; x += 16, n++) R(x + 6, top + fh + 5, 3, 3, (Math.floor(T * 2) + n) % 2 ? '#ffe08a' : '#e8742c');
+  R(0, top + fh + 13, w, h, '#0c0713');
+}
+function beam(x0, y0, x1, y1, r0, r1, c, a) {
+  ctx.fillStyle = c; ctx.globalAlpha = a;
+  for (let y = y0; y < y1; y += 2) { const f = (y - y0) / (y1 - y0), cx = x0 + (x1 - x0) * f, hw = r0 + (r1 - r0) * f; ctx.fillRect(Math.round(cx - hw), y, Math.round(hw * 2), 2); }
+  ctx.globalAlpha = a * 1.3; ctx.fillRect(Math.round(x1 - r1), y1, Math.round(r1 * 2), 2); ctx.fillRect(Math.round(x1 - r1 * .7), y1 + 2, Math.round(r1 * 1.4), 1);
+  ctx.globalAlpha = 1;
+}
+
+/* ---------- escenografía por zona ---------- */
+const amp = (x, y, ww, hh) => { R(x, y - hh, ww, hh, '#1a1620'); R(x + 2, y - hh + 3, ww - 4, hh - 8, '#3a3340'); for (let i = 3; i < ww - 4; i += 3) for (let j = y - hh + 5; j < y - 6; j += 3) R(x + i, j, 1, 1, '#1a1620'); for (let k = 0; k < 4; k++) R(x + 3 + k * 5, y - hh + 1, 2, 1, '#f0b43c'); R(x + ww - 3, y - 4, 2, 2, '#c8282a'); };
+const flight = (x, y, ww, hh) => { R(x, y - hh, ww, hh, '#2d2838'); R(x, y - hh, ww, 2, '#8a8a99'); R(x, y - 2, ww, 2, '#8a8a99'); R(x, y - hh, 2, hh, '#8a8a99'); R(x + ww - 2, y - hh, 2, hh, '#8a8a99'); R(x + ww / 2 - 3, y - hh / 2 - 2, 6, 4, '#f0b43c'); };
+
+function propsInicio(zx) {
+  [-112, 88].forEach((dx, k) => { const sk = shk('ai' + k);
+    hot(zx + dx, fy - 72, 24, 70, () => { bump('ai' + k); burst(zx + dx + 12, fy - 60); sfx('amp'); }, 'PROBAR AMP');
+    amp(zx + dx + sk, fy - 2, 24, 40); amp(zx + dx + sk, fy - 42, 24, 30); });
+  R(zx - 84, fy + 6, 22, 5, '#222'); R(zx + 62, fy + 6, 22, 5, '#222');
+}
+function propsSobre(zx, t) {
+  const sa = shk('amp1'), sm = shk('mic'), g = zx + shk('ag');
+  hot(zx - 100, fy - 74, 26, 72, () => { bump('amp1'); burst(zx - 87, fy - 60); sfx('amp'); }, 'PROBAR AMP');
+  amp(zx - 100 + sa, fy - 2, 26, 42); amp(zx - 100 + sa, fy - 44, 26, 28); R(zx - 64, fy + 2, 24, 7, '#222'); R(zx - 62, fy + 3, 20, 2, '#3a3340');
+  hot(zx - 10, fy - 44, 20, 46, () => { bump('mic'); burst(zx, fy - 42, 6); sfx('blip'); }, 'PROBAR MIC');
+  R(zx, fy - 36, 1, 36, '#9a9aa8'); R(zx - 7, fy - 1, 15, 2, '#6a6a78'); R(zx - 3 + sm, fy - 40, 7, 7, '#444'); R(zx - 2 + sm, fy - 41, 5, 2, '#9a9aa8');
+  R(zx + 26, fy - 20, 12, 3, '#c8282a'); R(zx + 28, fy - 17, 2, 17, '#6a6a78'); R(zx + 34, fy - 17, 2, 17, '#6a6a78');
+  hot(zx + 42, fy - 50, 18, 52, () => { bump('ag', .5); burst(zx + 50, fy - 30, 7); sfx('strum'); }, 'RASGUEAR');
+  R(g + 44, fy - 20, 12, 18, '#c8742c'); R(g + 46, fy - 22, 8, 22, '#c8742c'); R(g + 48, fy - 14, 4, 4, '#2a1a10'); R(g + 49, fy - 44, 2, 24, '#3a2418'); R(g + 48, fy - 48, 4, 5, '#3a2418');
+  alpha(.5, () => { for (let i = 0; i < 7; i++) { const px = zx - 28 + ((i * 41 + Math.floor(T * 10)) % 56), py = fy - 70 + ((i * 29 + Math.floor(T * 6)) % 60); R(px, py, 1, 1, '#f7ebc8'); } });
+}
+let scrHot = -1;
+const VNAMES = ['ATENTO', 'TORDO MUSICO', 'BROOKLYN HIGH'];
+function glow(k) { const c = $$('#z-musica .card')[k]; if (!c) return; c.classList.add('glow'); setTimeout(() => c.classList.remove('glow'), 1500); }
+function propsMusica(zx) {
+  [0, 1, 2].forEach(k => {
+    const x = zx + (k - 1) * 82, ty = fy - 82;
+    line(x - 10, 36, x - 10, ty, '#14091a'); line(x + 10, 36, x + 10, ty, '#14091a');
+    R(x - 28, ty, 56, 44, '#2a2030'); R(x - 28, ty, 56, 2, '#4a4060'); R(x - 24, ty + 4, 48, 36, '#0a0814');
+    const sx = x - 22, sy = ty + 6, sw = 44, sh = 32;
+    if (bmp('scr' + k) > 0) { R(sx, sy, sw, sh, '#262626'); for (let j = 0; j < 70; j++) R(sx + Math.random() * sw, sy + Math.random() * sh, 2 + Math.random() * 7, 1, Math.random() < .5 ? '#fff' : '#8a8a8a'); }
+    else if (k === 0) { R(sx, sy, sw, sh, '#10204a'); for (let i = 0; i < 9; i++) { const bh = 4 + Math.round((Math.sin(T * 5 + i * 1.3) * .5 + .5) * 22); R(sx + 3 + i * 4.6, sy + sh - bh - 1, 3, bh, i % 3 === 0 ? '#c8282a' : i % 3 === 1 ? '#e8742c' : '#f0b43c'); } }
+    else if (k === 1) { R(sx, sy, sw, sh, '#2a0a30'); for (let i = 0; i < sw; i++) R(sx + i, sy + sh / 2 + Math.sin(i * .35 + T * 6) * (9 + Math.sin(T * 2) * 4), 1, 2, '#f7ebc8'); R(sx, sy + sh / 2 + 12, sw, 1, '#4a2a60'); }
+    else { R(sx, sy, sw, sh, '#0c3a40'); const bx = Math.abs(((T * 22) % (2 * (sw - 6))) - (sw - 6)), by = Math.abs(((T * 15) % (2 * (sh - 6))) - (sh - 6)); R(sx + bx, sy + by, 5, 5, '#f0b43c'); R(sx + sw / 2 - 4, sy + sh / 2 - 5, 8, 10, '#f7ebc8'); R(sx + sw / 2 - 2, sy + sh / 2 - 3, 4, 6, '#0c3a40'); }
+    R(sx, sy, sw, 3, 'rgba(255,255,255,.07)'); for (let y = sy; y < sy + sh; y += 3) R(sx, y, sw, 1, 'rgba(0,0,0,.25)');
+    R(sx + 2, sy + 2, 12, 2, 'rgba(255,255,255,.18)'); R(x + 20, ty + 34, 3, 3, '#c8282a'); R(x + 14, ty + 34, 3, 3, '#f0b43c');
+    if (scrHot === k) { const c = Math.floor(T * 4) % 2 ? '#ffe08a' : '#f0b43c'; R(x - 30, ty - 2, 60, 2, c); R(x - 30, ty + 44, 60, 2, c); R(x - 30, ty - 2, 2, 48, c); R(x + 28, ty - 2, 2, 48, c); }
+    hot(x - 28, ty, 56, 44, () => { bump('scr' + k, .5); sfx('blip'); glow(k); }, VNAMES[k]);
+    flight(x - 30, fy - 0, 60, 38);
+  });
+}
+function propsGaleria(zx, t) {
+  const pos = [[-102, 28, 0], [-38, 22, 1], [28, 26, 2], [92, 24, 3]];
+  pos.forEach(([dx, top, i]) => { const ph = PHOTOS[i], fw = ph.fw + 8, fh = ph.fh + 8, x = zx + dx - fw / 2, y = fy - 96 + top - 14 + (Math.sin(t * .9 + i * 2) > .96 ? 1 : 0);
+    hot(x, y, fw, fh + 4, () => { sfx('blip'); openViewer(i); }, 'VER FOTO ' + (i + 1));
+    line(x + fw / 2, 36, x + 3, y, '#8a8a99'); line(x + fw / 2, 36, x + fw - 3, y, '#8a8a99');
+    R(x - 1, y - 1, fw + 2, fh + 2, '#5a3218'); R(x, y, fw, fh, '#f0b43c'); R(x + 1, y + 1, fw - 2, 1, '#ffe08a'); R(x + 3, y + 3, fw - 6, fh - 6, '#14091a');
+    if (ph.ok) ctx.drawImage(ph.cv, Math.round(x + 4), Math.round(y + 4)); else R(x + 4, y + 4, ph.fw, ph.fh, '#4a0c1e');
+    R(x + fw / 2 - 5, y - 5, 10, 3, '#14091a'); alpha(.12, () => { for (let k = 0; k < 8; k++) R(x - k, y + fh + 2 + k * 2, fw + k * 2, 2, '#ffe08a'); }); });
+  R(zx - 120, fy - 24, 240, 4, '#7e4a22'); R(zx - 120, fy - 20, 240, 2, '#5a3218'); R(zx - 114, fy - 20, 4, 20, '#5a3218'); R(zx + 110, fy - 20, 4, 20, '#5a3218');
+  R(zx - 86, fy - 38, 12, 14, '#2a6a3a'); R(zx - 84, fy - 46, 4, 8, '#3a8a4a'); R(zx - 90, fy - 42, 4, 6, '#3a8a4a'); R(zx - 88, fy - 26, 16, 2, '#a8201e');
+  R(zx + 70, fy - 30, 8, 6, '#f7ebc8'); R(zx + 70, fy - 32, 8, 2, '#c8282a');
+}
+function propsBanda(zx, t) {
+  const sp = 74, gy = fy + 4, SL = [-1, 1, 0];
+  for (let k = 0; k < 3; k++) { const x = zx + (k - 1) * sp; R(x - 26, gy - 2, 52, 4, '#f0b43c'); R(x - 24, gy + 2, 48, 3, '#7a1220'); }
+  [0, 2, 1].forEach(i => {
+    const x = zx + SL[i] * sp, a = act[i], play = a > .5, eu = play ? a : 0, seg = Math.floor(t / 2.6 + i * 1.37), r = hsh(seg * 3.1 + i * 17), r2 = hsh(seg * 7.7 + i * 5);
+    let face, tilt = 0;
+    if (play) face = i === 1 ? -1 : 1;
+    else if (sel >= 0) face = Math.sign(SL[sel] - SL[i]) || 1;
+    else { face = i === 0 ? (r < .65 ? 1 : -1) : i === 1 ? (r < .65 ? -1 : 1) : (r < .5 ? 1 : -1); tilt = r2 < .22 ? -1 : r2 > .78 ? 1 : 0; }
+    if (a > .05) beam(x, 40, x + 2, gy + 8, 5, 26, '#ffe08a', .24 * a);
+    drawChar(i, x, gy, 1, t, i * .33, { play, eu, tilt, face, hop: hopH(i) });
+    if (play) { if (Math.random() < .4) note(x + (Math.random() - .5) * 34, gy - 56); if (Math.floor(t * 10 + i) % 3 === 0) { const sx = x + (Math.random() - .5) * 70, sy = gy - 20 - Math.random() * 50; R(sx, sy - 2, 1, 5, '#ffe08a'); R(sx - 2, sy, 5, 1, '#ffe08a'); } }
+    const by = gy - 64 + Math.round(Math.sin(t * 4 + i) * 2); R(x - 7, by, 14, 9, play ? '#f7ebc8' : '#f0b43c'); txt('P' + (SL[i] + 2), x, by + 1, '#14091a', 8, 'center'); R(x - 2, by + 9, 4, 2, play ? '#f7ebc8' : '#f0b43c'); R(x - 1, by + 11, 2, 1, play ? '#f7ebc8' : '#f0b43c');
+    if (say[i] > 0) bubble(x - face * 26, gy - 50, sayT[i]);
+    else if (!play && sel < 0 && ((t / 2.6 + i * 1.37) % 1) > .35 && r2 > .62) bubble(x - face * 26, gy - 50, ['...', 'zzz', '- -', '?'][Math.floor(r * 4) % 4]);
+    hot(x - 26, gy - 56, 52, 58, () => selectChar(i), 'P' + (SL[i] + 2) + ' ' + CH[i].name.toUpperCase());
+  });
+}
+const mute = new Array(12).fill(false);
+function propsRider(zx, t) {
+  [-1, 1].forEach(sg => { const x = zx + sg * 104; R(x - 14, fy - 78, 28, 78, '#14111a'); R(x - 12, fy - 76, 24, 74, '#1d1a26'); const pulse = Math.floor(t * 4) % 2;
+    [[-62, 9], [-34, 12]].forEach(([dy, r]) => { const rr = r + pulse; R(x - rr, fy + dy - rr + 24, rr * 2, rr * 2, '#0a0814'); R(x - rr + 2, fy + dy - rr + 26, rr * 2 - 4, rr * 2 - 4, '#2a2638'); R(x - 3, fy + dy + 21, 6, 6, '#555'); });
+    R(x - 4, fy - 74, 8, 3, '#8a8a99'); });
+  /* consola: cada canal se puede silenciar */
+  const cx = zx - 84, cy = fy - 32; R(cx, cy + 6, 108, 26, '#1d1a26'); R(cx, cy, 108, 8, '#35324a'); R(cx, cy, 108, 1, '#6a6a88'); R(cx + 4, cy + 32, 4, 12, '#14111a'); R(cx + 100, cy + 32, 4, 12, '#14111a');
+  for (let i = 0; i < 12; i++) { const x = cx + 7 + i * 8.4, m = mute[i], p = m ? 9 : Math.round((Math.sin(t * 1.7 + i * 1.9) * .5 + .5) * 9);
+    R(x, cy + 10, 1, 12, '#0a0814'); R(x - 1, cy + 10 + p, 3, 3, m ? '#6a6a78' : (i % 4 === 0 ? '#c8282a' : '#f7ebc8')); R(x - 1, cy + 24, 3, 2, m ? '#c8282a' : (((Math.floor(t * 6) + i) % 5 === 0) ? '#f0b43c' : '#3a3340'));
+    hot(x - 4, cy + 8, 8, 20, () => { mute[i] = !mute[i]; sfx(mute[i] ? 'off' : 'blip'); }, (m ? 'ACTIVAR' : 'MUTE') + ' CH ' + String(i + 1).padStart(2, '0')); }
+  /* flight case = descarga del rider */
+  const kx = zx + 46, kb = fy + 10, kw = 46, kh = 32, bo = Math.round(Math.abs(Math.sin(t * 3)) * 2);
+  R(kx + 8, kb - kh - 7, kw - 16, 8, '#f7ebc8'); R(kx + 10, kb - kh - 5, kw - 20, 1, '#8a7a5a'); R(kx + 10, kb - kh - 3, kw - 24, 1, '#8a7a5a');
+  R(kx, kb - kh, kw, kh, '#2d2838'); R(kx, kb - kh, kw, 2, '#8a8a99'); R(kx, kb - 2, kw, 2, '#8a8a99'); R(kx, kb - kh, 2, kh, '#8a8a99'); R(kx + kw - 2, kb - kh, 2, kh, '#8a8a99');
+  [[-1, -kh - 1], [kw - 3, -kh - 1], [-1, -4], [kw - 3, -4]].forEach(([dx, dy]) => R(kx + dx, kb + dy, 4, 4, '#c8c8d0'));
+  R(kx + 8, kb - kh + 20, 7, 4, '#f0b43c'); R(kx + kw - 15, kb - kh + 20, 7, 4, '#f0b43c'); R(kx + 6, kb, 5, 3, '#14091a'); R(kx + kw - 11, kb, 5, 3, '#14091a');
+  txt('RIDER', kx + kw / 2, kb - kh + 5, '#f7ebc8', 8, 'center'); txt('PDF', kx + kw / 2, kb - kh + 13, '#f0b43c', 8, 'center');
+  arrowDn(kx + kw / 2, kb - kh - 18 - bo);
+  hot(kx - 2, kb - kh - 22, kw + 4, kh + 24, () => dl('rider'), 'DESCARGAR RIDER');
+  const blink = Math.floor(t * 1.6) % 2; R(zx - 28, fy - 100, 56, 15, blink ? '#c8282a' : '#4a0c1e'); R(zx - 28, fy - 100, 56, 1, '#f0b43c'); R(zx - 28, fy - 86, 56, 1, '#f0b43c'); txt('ON AIR', zx, fy - 97, blink ? '#f7ebc8' : '#8a4a4a', 8, 'center');
+}
+function propsRecursos(zx, t) {
+  R(zx - 34, fy - 98, 68, 66, '#f7ebc8'); R(zx - 31, fy - 95, 62, 60, '#7a1220'); for (let i = 0; i < 5; i++) R(zx - 31, fy - 95 + i * 12, 62, 6, i % 2 ? '#a8201e' : '#c8282a');
+  txt('MNM', zx, fy - 90, '#f7ebc8', 16, 'center'); R(zx - 20, fy - 70, 40, 2, '#f0b43c'); txt('EN VIVO', zx, fy - 64, '#f0b43c', 8, 'center'); R(zx - 18, fy - 54, 36, 14, '#14091a'); for (let i = 0; i < 6; i++) R(zx - 15 + i * 5, fy - 52 + (i % 2) * 3, 3, 10 - (i % 2) * 3, '#e8742c');
+  R(zx - 70, fy - 24, 140, 5, '#a8672e'); R(zx - 70, fy - 19, 140, 2, '#5a3218'); R(zx - 64, fy - 19, 4, 19, '#5a3218'); R(zx + 60, fy - 19, 4, 19, '#5a3218');
+  const bob = i => Math.round(Math.sin(t * 3 + i * 2) * 2);
+  /* carpeta Drive */ let x = zx - 52, y = fy - 38 + bob(0); R(x, y, 24, 14, '#f0b43c'); R(x, y - 3, 10, 4, '#f0b43c'); R(x + 2, y + 3, 20, 1, '#ffe08a'); R(x, y + 12, 24, 2, '#c98a1a');
+  hot(x - 2, y - 6, 28, 22, () => dl('drive'), 'ABRIR DRIVE'); tag(zx - 50, fy - 14, 'DRIVE'); arrowDn(x + 12, fy - 52 + bob(0));
+  /* dossier */ x = zx - 8; y = fy - 46 + bob(1); R(x, y, 18, 24, '#f7ebc8'); R(x, y, 18, 4, '#c8282a'); for (let i = 0; i < 4; i++) R(x + 3, y + 8 + i * 4, 12, 1, '#8a7a5a'); txt('PDF', x + 9, y + 1, '#f7ebc8', 4, 'center');
+  hot(x - 2, y - 2, 22, 28, () => dl('dossier'), 'DESCARGAR DOSSIER'); tag(zx, fy - 14, 'DOSSIER'); arrowDn(x + 9, fy - 60 + bob(1));
+  /* rider: portapapeles con el plano de escenario */ x = zx + 32; y = fy - 44 + bob(2); R(x, y, 22, 26, '#7e4a22'); R(x + 2, y + 3, 18, 21, '#f7ebc8'); R(x + 7, y - 2, 8, 4, '#8a8a99'); R(x + 5, y + 8, 3, 3, '#c8282a'); R(x + 11, y + 8, 3, 3, '#3a64a8'); R(x + 8, y + 15, 4, 3, '#e8742c'); R(x + 4, y + 20, 14, 1, '#8a7a5a');
+  hot(x - 2, y - 4, 26, 32, () => dl('rider'), 'DESCARGAR RIDER'); tag(zx + 46, fy - 14, 'RIDER'); arrowDn(x + 11, fy - 52 + bob(2));
+  for (let i = 0; i < 3; i++) { const sp = Math.sin(t * 2 + i * 2.1); if (sp > .6) { const px = zx - 50 + i * 46, py = fy - 52 - i % 2 * 6; R(px, py, 1, 5, '#fff'); R(px - 2, py + 2, 5, 1, '#fff'); } }
+  flight(zx - 112, fy, 34, 30); flight(zx + 78, fy, 40, 24); flight(zx + 82, fy - 24, 30, 20);
+}
+let neonOff = false;
+function propsContacto(zx, t) {
+  const bx = zx - 46, by = fy;
+  R(bx, by - 72, 92, 72, '#1d2b5c'); R(bx, by - 72, 92, 3, '#3a64a8'); R(bx + 4, by - 40, 84, 3, '#14194a');
+  for (let i = 0; i < 12; i++) { R(bx - 4 + i * 8, by - 90, 8, 18, i % 2 ? '#f7ebc8' : '#c8282a'); R(bx - 4 + i * 8, by - 72, 8, 3, i % 2 ? '#f7ebc8' : '#c8282a'); }
+  R(bx - 4, by - 92, 100, 3, '#14091a'); R(bx + 14, by - 54, 64, 34, '#0a0814'); R(bx + 16, by - 52, 60, 30, '#f0b43c'); R(bx + 16, by - 52, 60, 6, '#e8742c'); R(bx + 14, by - 22, 64, 4, '#7e4a22');
+  hot(bx + 14, by - 54, 64, 34, () => { const f = $('#f-name'); if (f) f.focus(); sfx('blip'); }, 'VENTANILLA');
+  const ph = shk('ph');
+  R(bx + 24 + ph, by - 32, 14, 6, '#c8282a'); R(bx + 22 + ph, by - 36 + (Math.floor(t * 8) % 2) * (Math.sin(t * .5) > .5 ? 1 : 0), 18, 3, '#14091a');
+  hot(bx + 20, by - 38, 22, 14, () => { bump('ph', .9); sfx('ring'); burst(bx + 31, by - 40, 5); }, 'TELEFONO');
+  if (bmp('ph') > 0) bubble(bx + 31, by - 62, 'RING!');
+  const ev = shk('mail'); R(bx + 50, by - 34 + ev, 16, 11, '#f7ebc8'); line(bx + 50, by - 34 + ev, bx + 58, by - 28 + ev, '#8a7a5a'); line(bx + 66, by - 34 + ev, bx + 58, by - 28 + ev, '#8a7a5a');
+  hot(bx + 48, by - 36, 20, 15, () => { bump('mail', .3); dl('mail'); }, 'ESCRIBIR MAIL');
+  const fl = neonOff ? 0 : (Math.sin(t * 9) > .85 ? 0 : 1); txt('BOOKING', zx, by - 108, fl ? '#ff7ad0' : '#6a3a5a', 8, 'center'); alpha(.25 * fl, () => R(zx - 32, by - 110, 64, 12, '#ff7ad0'));
+  hot(zx - 34, by - 112, 68, 14, () => { neonOff = !neonOff; sfx(neonOff ? 'off' : 'blip'); }, neonOff ? 'ENCENDER NEON' : 'APAGAR NEON');
+  R(bx + 38, by - 26, 16, 26, '#3a200e'); R(bx + 50, by - 14, 2, 2, '#f0b43c');
+  [-1, 1].forEach(sg => { const x0 = zx + sg * 56, x1 = zx + sg * 170; R(x1 - 1, fy - 70, 3, 70, '#2a2438'); for (let i = 0; i <= 14; i++) { const f = i / 14, x = x0 + (x1 - x0) * f, y = by - 88 + Math.sin(f * Math.PI) * 12 + f * 10; R(x, y, 2, 1, '#14091a'); if (i % 2 === 0) R(x, y + 1, 3, 3, ((i + Math.floor(t * 2)) % 3 === 0) ? '#f0b43c' : ((i + Math.floor(t * 2)) % 3 === 1) ? '#ff7ad0' : '#6ad0ff'); } });
+}
+
+/* ---------- público (primer plano, parallax 1.5) ---------- */
+function drawCrowd(t) {
+  const o = -mod(camX * 1.5, 128), spec = [[4, 22, 15, '#0a0612'], [27, 26, 17, '#12091c'], [52, 20, 14, '#0a0612'], [75, 28, 16, '#190d26'], [100, 22, 15, '#0a0612']];
+  const bot = h;
+  for (let x = o - 128, n = 0; x < w + 8; x += 128, n++) {
+    const idx = mod(Math.floor((camX * 1.5) / 128) + Math.round((x - o) / 128) , 30);
+    spec.forEach(([dx, hh, hw, col], k) => { const cx = x + dx + 6, top = bot - hh - 8 - (k % 2) * 4 - (mod(idx * 3 + k, 3)) * 2;
+      const up = Math.sin(t * 3 + k * 2 + idx * .9) > .1; const bob = Math.round(Math.sin(t * 5 + k + idx) * 1);
+      R(cx - hw / 2 - 2, top + 12 + bob, hw + 4, hh + 40, col); R(cx - hw / 2, top + bob, hw, 14, col); R(cx - hw / 2 + 1, top + bob, hw - 2, 1, 'rgba(240,180,60,.5)'); R(cx - hw / 2, top + 1 + bob, 1, 12, 'rgba(232,116,44,.35)');
+      if (up) { R(cx - hw / 2 - 5, top + 2 + bob - 8, 3, 16, col); R(cx + hw / 2 + 2, top - 3 + bob - 6, 3, 16, col); R(cx - hw / 2 - 5, top - 6 + bob, 3, 2, '#d49a6a'); R(cx + hw / 2 + 2, top - 9 + bob, 3, 2, '#d49a6a'); } else { R(cx - hw / 2 - 4, top + 14 + bob, 3, 8, col); R(cx + hw / 2 + 1, top + 14 + bob, 3, 8, col); }
+    });
+  }
+}
+
+/* ---------- telón de la intro ---------- */
+function drawCurtainIntro() {
+  if (introT >= 1) return;
+  const e = introT * introT * (3 - 2 * introT), cw = Math.round((w / 2 + 6) * (1 - e));
+  if (cw <= 0) return;
+  for (const side of [0, 1]) {
+    for (let x = 0; x < cw; x += 1) { const px = side ? w - 1 - x : x, k = Math.floor((x + (side ? 5 : 0)) / 3) % 6, col = ['#b02420', '#c8282a', '#d6402e', '#c8282a', '#a01c20', '#7a1220'][k]; R(px, 0, 1, h, col); }
+    const ex = side ? w - cw : cw - 4; R(ex, 0, 4, h, '#f0b43c'); R(side ? ex - 1 : ex + 4, 0, 1, h, '#c98a1a');
+    const ty = Math.round(h * .55); R(side ? ex - 8 : ex + 4, ty, 8, 6, '#f0b43c'); R(side ? ex - 6 : ex + 5, ty + 6, 4, 14, '#c98a1a'); for (let k = 0; k < 4; k++) R((side ? ex - 8 : ex + 4) + k * 2, ty + 20, 1, 7, '#f0b43c');
+  }
+  R(0, 0, w, 14, '#4a0c1e'); R(0, 14, w, 2, '#f0b43c');
+}
+
+/* =====================================================================
+   BUCLE
+   ===================================================================== */
+let last = 0;
+function frame(ts) {
+  const dt = Math.min(.05, (ts - last) / 1000 || .016); last = ts; T += dt;
+  const target = tz * ZW; camX = reduce ? target : camX + (target - camX) * (1 - Math.exp(-dt * 5.2));
+  if (Math.abs(camX) > W * 6) { camX -= Math.sign(camX) * W * 4; tz -= Math.sign(tz) * Z * 4; }
+  if (introGo && introT < 1) { introT = Math.min(1, introT + dt / (reduce ? .01 : 1.7)); if (introT >= 1) { started = true; document.body.classList.remove('intro'); } }
+  P = blend(); fy = Math.round(h * P.floor); focal = Math.round(w * P.focal);
+  for (let i = 0; i < 3; i++) { act[i] += ((sel === i ? 1 : 0) - act[i]) * (1 - Math.exp(-dt * (reduce ? 60 : 9))); hop[i] = Math.max(0, hop[i] - dt); say[i] = Math.max(0, say[i] - dt); }
+  const base = camX; settled = Math.abs(base - tz * ZW) < 24;
+  const panT = (!mobile && sel >= 0 && mod(tz, Z) === 4) ? PANDIR[sel] * Math.round(Math.min(400, innerWidth * .34) / 2 / ps) : 0;
+  panX += (panT - panX) * (1 - Math.exp(-dt * (reduce ? 60 : 5))); camX = base + Math.round(panX);
+  HS = [];
+  drawBackdrop(); drawTruss(); drawFloor();
+  const zxs = i => sxw(i * ZW);
+  /* focos */
+  const z0 = zxs(0), z1 = zxs(1), z4 = zxs(4), z7 = zxs(7);
+  const aim = (mouseX > 0 && settled && mod(tz, Z) === 0) ? Math.max(-40, Math.min(40, (mouseX - z0) * .35)) : 0;
+  beam(z0 - 70, 42, z0 - 62 + Math.sin(T * .9) * 10 + aim, fy + 12, 3, 22, '#f0b43c', .09); beam(z0 + 70, 42, z0 + 62 + Math.sin(T * .8 + 2) * 10 + aim, fy + 12, 3, 22, '#e8742c', .09);
+  beam(z1 + 10, 42, z1 + Math.sin(T * .7) * 6, fy + 14, 3, 26, '#f7ebc8', .11);
+  [-1, 0, 1].forEach((k, n) => beam(z4 + k * 92, 42, z4 + k * 80 + Math.sin(T + n) * 8, fy + 10, 3, 24, ['#3a64a8', '#f0b43c', '#c8282a'][n], .11));
+  beam(z7 - 50, 42, z7 - 30 + Math.sin(T) * 14, fy + 12, 3, 24, '#ff7ad0', .09); beam(z7 + 50, 42, z7 + 30 + Math.sin(T * 1.2) * 14, fy + 12, 3, 24, '#6ad0ff', .09);
+  /* props en orden de zona (solo si están a la vista) */
+  const vis = (i, r = 190) => Math.abs(zxs(i) - w / 2) < w / 2 + r;
+  if (vis(0)) { cp = 0; propsInicio(z0);
+    [0, 2, 1].forEach(i => { const x = z0 + [-64, 64, 0][i]; drawChar(i, x, fy + 4, 1, T, i * .33, { play: true, hop: hopH(i) });
+      hot(x - 24, fy - 50, 48, 54, () => { hop[i] = .45; say[i] = .9; sayT[i] = ['HOLA!', 'VAMOS!', 'EY!'][i]; burst(x, fy - 52, 5); sfx('blip'); }, CH[i].name.toUpperCase());
+      if (say[i] > 0) bubble(x - 26, fy - 48, sayT[i]); });
+    if (P.pos < .6 || P.pos > Z - .6) { if (Math.random() < .05) note(z0 + (Math.random() - .5) * 120, fy - 50); } }
+  if (vis(1)) { cp = 1; propsSobre(z1, T); }
+  if (vis(2)) { cp = 2; propsMusica(zxs(2)); }
+  if (vis(3)) { cp = 3; propsGaleria(zxs(3), T); }
+  if (vis(4)) { cp = 4; propsBanda(z4, T); }
+  if (vis(5)) { cp = 5; propsRider(zxs(5), T); }
+  if (vis(6)) { cp = 6; propsRecursos(zxs(6), T); }
+  if (vis(7)) { cp = 7; propsContacto(z7, T); }
+  cp = -1;
+  drawNotes(dt);
+  drawCrowd(T);
+  hover = hit(mouseX, mouseY); const cur = hover ? 'pointer' : ''; if (cur !== curCur) { cv.style.cursor = cur; curCur = cur; }
+  drawHover();
+  drawCurtainIntro();
+  camX = base;
+  updateHud();
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   NAVEGACIÓN / HUD
+   ===================================================================== */
+const zones = $$('.zone'), ids = zones.map(z => z.dataset.id), dotsEl = $('#dots'), degEl = $('#deg');
+ids.forEach(() => dotsEl.appendChild(document.createElement('i')));
+let shownZ = -1;
+function updateHud() {
+  const z = mod(tz, Z); if (z !== shownZ) { const pz = shownZ; shownZ = z; if (pz === 4) selectChar(-1); if (pz === 3) closeViewer(true);
+    zones.forEach((el, i) => { const on = i === z; el.classList.toggle('on', on); el.toggleAttribute('inert', !on); el.setAttribute('aria-hidden', on ? 'false' : 'true'); });
+    $$('i', dotsEl).forEach((d, i) => d.classList.toggle('on', i === z)); $$('#menu a').forEach(a => a.classList.toggle('on', a.dataset.go === ids[z]));
+    try { history.replaceState(null, '', '#' + ids[z]); } catch (e) {}
+  }
+  degEl.textContent = String(Math.round(mod(camX / W, 1) * 360) % 360).padStart(3, '0') + '°';
+}
+let cd = 0;
+function shortest(i) { let d = mod(i - mod(tz, Z), Z); if (d > Z / 2) d -= Z; return d; }
+function goId(id, instant) { const i = ids.indexOf(id); if (i < 0) return; tz += shortest(i); if (instant) camX = tz * ZW; closeMenu(); }
+function stepZ(d) { if (!started || vOpen) return; const n = Date.now(); if (n < cd) return; cd = n + (reduce ? 0 : 650); tz += d; }
+function startShow() { if (introGo) return; introGo = true; }
+$('#start').addEventListener('click', startShow);
+$$('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!started) { startShow(); return; } goId(a.dataset.go); }));
+$('#prev').addEventListener('click', () => { cd = 0; stepZ(-1); }); $('#next').addEventListener('click', () => { cd = 0; stepZ(1); });
+const menu = $('#menu'), burger = $('#burger');
+function closeMenu() { menu.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); }
+burger.addEventListener('click', () => { const o = menu.classList.toggle('open'); burger.setAttribute('aria-expanded', String(o)); });
+
+const canScroll = (el, dy) => el.scrollHeight > el.clientHeight + 2 && (dy > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0);
+addEventListener('wheel', e => {
+  if (!started) return; if (vOpen) { e.preventDefault(); return; } const pan = e.target.closest && e.target.closest('.panel'); if (pan && canScroll(pan, e.deltaY)) return;
+  e.preventDefault(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) > 8) stepZ((Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) > 0 ? 1 : -1);
+}, { passive: false });
+let tsx = 0, tsy = 0, tpan = null;
+addEventListener('touchstart', e => { const t = e.touches[0]; tsx = t.clientX; tsy = t.clientY; tpan = e.target.closest && e.target.closest('.panel'); }, { passive: true });
+addEventListener('touchend', e => { if (!started || vOpen) return; const t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
+  if (tpan) { if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) stepZ(dx < 0 ? 1 : -1); return; }
+  if (Math.max(Math.abs(dx), Math.abs(dy)) > 40) stepZ((Math.abs(dx) > Math.abs(dy) ? dx : dy) < 0 ? 1 : -1); }, { passive: true });
+addEventListener('keydown', e => {
+  if (e.target.closest && e.target.closest('input,textarea,select')) return;
+  if (vOpen) { if (e.key === 'Escape') { e.preventDefault(); closeViewer(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); showC(ci - 1); } else if (e.key === 'ArrowRight') { e.preventDefault(); showC(ci + 1); } return; }
+  if (e.key === 'Escape' && sel >= 0) { selectChar(-1); return; }
+  if (!started) { if (e.key === 'Enter' || e.key === ' ') { if (document.activeElement && document.activeElement.id === 'start') return; e.preventDefault(); startShow(); } return; }
+  const inPanel = e.target.closest && e.target.closest('.panel');
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); cd = 0; stepZ(1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); cd = 0; stepZ(-1); }
+  else if (!inPanel && (e.key === 'ArrowDown' || e.key === ' ')) { e.preventDefault(); cd = 0; stepZ(1); }
+  else if (!inPanel && e.key === 'ArrowUp') { e.preventDefault(); cd = 0; stepZ(-1); }
+  else if (e.key === 'Home') { goId('inicio'); } else if (e.key === 'End') { goId('contacto'); }
+});
+
+/* integrantes: se eligen tocándolos en el escenario */
+const castBtns = $$('.cbtn[data-char]'), infos = $$('.info'), zBanda = $('#z-banda'), hintBand = $('#hint-band');
+function selectChar(i) {
+  if (i === sel) i = -1; sel = i;
+  if (i >= 0) { hop[i] = .45; say[i] = .9; sayT[i] = 'OK!'; sfx('blip'); }
+  infos.forEach(el => { const on = +el.dataset.char === i; el.classList.toggle('show', on); el.setAttribute('aria-hidden', on ? 'false' : 'true'); });
+  castBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.char === i)));
+  zBanda.classList.toggle('has-sel', i >= 0); hintBand.style.visibility = i >= 0 ? 'hidden' : 'visible';
+}
+infos.forEach(el => el.setAttribute('aria-hidden', 'true'));
+castBtns.forEach(b => b.addEventListener('click', () => selectChar(+b.dataset.char)));
+infos.forEach(el => $('.x', el).addEventListener('click', () => selectChar(-1)));
+$$('#z-musica .card').forEach((c, k) => { c.addEventListener('mouseenter', () => { scrHot = k; }); c.addEventListener('mouseleave', () => { scrHot = -1; }); });
+
+/* videos: cargar al hacer clic */
+document.addEventListener('click', e => { const b = e.target.closest('.vframe button'); if (!b) return; const f = b.parentElement, ifr = document.createElement('iframe');
+  ifr.src = 'https://www.youtube.com/embed/' + f.dataset.yt + '?autoplay=1&rel=0'; ifr.title = b.dataset.title; ifr.allow = 'autoplay; encrypted-media; picture-in-picture; web-share; fullscreen'; ifr.allowFullscreen = true; f.replaceChildren(ifr); });
+
+/* galería */
+const tr = $('#ctrack'), nS = tr.children.length, cc = $('#ccount'); let ci = 0;
+function showC(i) { ci = mod(i, nS); tr.style.transform = `translateX(-${ci * 100}%)`; cc.textContent = `${String(ci + 1).padStart(2, '0')} / ${String(nS).padStart(2, '0')}`; }
+$('#cprev').addEventListener('click', () => showC(ci - 1)); $('#cnext').addEventListener('click', () => showC(ci + 1));
+
+/* visor de fotos: se arma a partir de cuadraditos */
+const viewer = $('#viewer'), vmask = $('#vmask'), vctx = vmask.getContext('2d'), vpanel = $('.vpanel', viewer), hintGal = $('#hint-gal'), CELL = 12;
+let vP = 0, vDir = 0, vRaf = 0, vLast = 0, vCols = 0, vRows = 0, vTiny = null, vA = null, vB = null;
+function buildMosaic() {
+  const r = vpanel.getBoundingClientRect(); vCols = Math.max(4, Math.ceil(r.width / CELL)); vRows = Math.max(4, Math.ceil(r.height / CELL));
+  Object.assign(vmask.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+  vmask.width = vCols; vmask.height = vRows; vctx.imageSmoothingEnabled = false;
+  vTiny = document.createElement('canvas'); vTiny.width = vCols; vTiny.height = vRows; const g = vTiny.getContext('2d');
+  g.fillStyle = '#120a1c'; g.fillRect(0, 0, vCols, vRows); g.fillStyle = '#f0b43c'; g.fillRect(0, 0, vCols, 1); g.fillRect(0, vRows - 1, vCols, 1); g.fillRect(0, 0, 1, vRows); g.fillRect(vCols - 1, 0, 1, vRows);
+  const kx = vCols / r.width, ky = vRows / r.height, vw = $('.cview', viewer).getBoundingClientRect(), vx = (vw.left - r.left) * kx, vy = (vw.top - r.top) * ky, vww = vw.width * kx, vhh = vw.height * ky;
+  g.fillStyle = '#000'; g.fillRect(vx, vy, vww, vhh);
+  const im = tr.children[ci].querySelector('img');
+  if (im && im.complete && im.naturalWidth) { const k = Math.min(vww / im.naturalWidth, vhh / im.naturalHeight), dw = im.naturalWidth * k, dh = im.naturalHeight * k; g.imageSmoothingEnabled = true; g.drawImage(im, vx + (vww - dw) / 2, vy + (vhh - dh) / 2, dw, dh); }
+  vA = new Float32Array(vCols * vRows); vB = new Float32Array(vCols * vRows);
+  for (let i = 0; i < vA.length; i++) { vA[i] = Math.random() * .3; vB[i] = .45 + Math.random() * .4; }
+}
+function vDraw() {
+  vctx.clearRect(0, 0, vCols, vRows);
+  for (let y = 0; y < vRows; y++) for (let x = 0; x < vCols; x++) { const i = y * vCols + x, a = Math.min(1, Math.max(0, (vP - vA[i]) * 8)) * (1 - Math.min(1, Math.max(0, (vP - vB[i]) * 8)));
+    if (a <= .02) continue; vctx.globalAlpha = Math.ceil(a * 4) / 4; vctx.drawImage(vTiny, x, y, 1, 1, x, y, 1, 1); }
+  vctx.globalAlpha = 1;
+  vpanel.style.visibility = vP > .42 ? 'visible' : 'hidden';
+  viewer.style.background = `rgba(10,6,20,${(.62 * Math.min(1, vP * 2.5)).toFixed(2)})`;
+}
+function finishClose() { vRaf = 0; vOpen = false; viewer.hidden = true; viewer.setAttribute('aria-hidden', 'true'); vctx.clearRect(0, 0, vCols || 1, vRows || 1); hintGal.style.visibility = 'visible'; }
+function vTick(now) {
+  const dt = Math.min(.05, (now - vLast) / 1000 || .016); vLast = now; vP = Math.max(0, Math.min(1, vP + vDir * dt / 1.1)); vDraw();
+  if (vDir > 0 && vP >= 1) { vctx.clearRect(0, 0, vCols, vRows); vRaf = 0; return; }
+  if (vDir < 0 && vP <= 0) { finishClose(); return; }
+  vRaf = requestAnimationFrame(vTick);
+}
+function openViewer(i) {
+  if (vOpen) return; showC(i); vOpen = true; viewer.hidden = false; viewer.setAttribute('aria-hidden', 'false'); hintGal.style.visibility = 'hidden';
+  if (reduce) { vP = 1; vpanel.style.visibility = 'visible'; viewer.style.background = 'rgba(10,6,20,.62)'; $('#vclose').focus(); return; }
+  vpanel.style.visibility = 'hidden'; buildMosaic(); vP = 0; vDir = 1; vLast = performance.now(); cancelAnimationFrame(vRaf); vRaf = requestAnimationFrame(vTick);
+  setTimeout(() => { if (vOpen && vDir > 0) $('#vclose').focus(); }, 600);
+}
+function closeViewer(instant) {
+  if (!vOpen) return; cancelAnimationFrame(vRaf);
+  if (instant || reduce) { vP = 0; finishClose(); return; }
+  buildMosaic(); vDir = -1; vLast = performance.now(); vRaf = requestAnimationFrame(vTick);
+}
+viewer.addEventListener('click', e => { if (e.target === viewer) closeViewer(); });
+$('#vclose').addEventListener('click', () => closeViewer());
+$$('[data-ph]').forEach(b => b.addEventListener('click', () => openViewer(+b.dataset.ph)));
+
+/* formulario */
+$('#booking').addEventListener('submit', e => { e.preventDefault(); const f = new FormData(e.currentTarget);
+  location.href = `mailto:mnmtrio.contacto@gmail.com?subject=${encodeURIComponent('Consulta de contratación - ' + f.get('name'))}&body=${encodeURIComponent(`Nombre / organización: ${f.get('name')}\nEmail: ${f.get('email')}\n\nPropuesta:\n${f.get('message')}`)}`;
+  $('#fstatus').textContent = 'Se abrió tu cliente de email con la consulta lista para enviar.'; });
+
+/* =====================================================================
+   SONIDO 8-bit (opcional, apagado por defecto)
+   ===================================================================== */
+let ac = null, master = null, musicOn = false, tmr = 0, nextT = 0, stepN = 0;
+const PEN = [110, 130.81, 146.83, 164.81, 196], BASS = [0, 0, 2, 3, 0, 0, 4, 3, 0, 0, 2, 3, 4, 3, 2, 1];
+function tone(f, t0, d, type, v, f2) { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d); g.gain.setValueAtTime(v, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + d); o.connect(g); g.connect(master); o.start(t0); o.stop(t0 + d + .03); }
+function hat(t0) { const n = ac.sampleRate * .04, b = ac.createBuffer(1, n, ac.sampleRate), d = b.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; const s = ac.createBufferSource(), g = ac.createGain(); s.buffer = b; g.gain.setValueAtTime(.05, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + .04); s.connect(g); g.connect(master); s.start(t0); }
+function sched() { const spb = 60 / 104 / 4; while (nextT < ac.currentTime + .3) { const s = stepN % 16;
+  if (s % 2 === 0) tone(PEN[BASS[s]] / 2, nextT, spb * 1.8, 'triangle', .16);
+  if (s === 0 || s === 8 || s === 10) tone(150, nextT, .14, 'sine', .3, 45); if (s % 2 === 0) hat(nextT);
+  if (s % 2 === 1 && Math.random() < .55) tone(PEN[Math.floor(Math.random() * 5)] * 4, nextT, spb * 1.4, 'square', .035);
+  nextT += spb; stepN++; } }
+$('#snd').addEventListener('click', e => { const b = e.currentTarget;
+  if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; ac = new AC(); master = ac.createGain(); master.gain.value = .6; master.connect(ac.destination); }
+  musicOn = !musicOn; b.textContent = musicOn ? '♪ SÍ' : '♪ NO'; b.setAttribute('aria-pressed', String(musicOn));
+  if (musicOn) { ac.resume(); nextT = ac.currentTime + .05; tmr = setInterval(sched, 90); } else { clearInterval(tmr); } });
+
+/* ---------- arranque ---------- */
+function boot() {
+  resize(); addEventListener('resize', resize);
+  const hash = location.hash.slice(1), i = ids.indexOf(hash);
+  if (i > 0) { tz = i; camX = tz * ZW; introGo = true; introT = 1; started = true; document.body.classList.remove('intro'); }
+  requestAnimationFrame(frame);
+}
+const fl = document.fonts && document.fonts.load ? document.fonts.load('8px "Press Start 2P"').then(() => { fontOK = true; }).catch(() => {}) : Promise.resolve();
+Promise.race([fl, new Promise(r => setTimeout(r, 1200))]).then(boot);
+window.MNM = { go: (id, instant = true) => goId(id, instant), start: () => { introGo = true; introT = 1; started = true; document.body.classList.remove('intro'); }, pick: i => selectChar(i), open: i => openViewer(i), info: () => ({ w, h, ps, tz, camX, fy }) };
+})();
+</script>
+</body>
+</html>
