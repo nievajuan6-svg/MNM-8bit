@@ -33,6 +33,12 @@ body.intro .hud{opacity:0;pointer-events:none}
 .deg{font-family:var(--px);font-size:9px;color:var(--gold);text-shadow:1px 1px 0 #000;white-space:nowrap}
 .sbtn{font-family:var(--px);font-size:9px;background:var(--ink);color:var(--cream);border:2px solid var(--cream);padding:8px 9px;cursor:pointer}
 .sbtn:hover{border-color:var(--gold);color:var(--gold)}
+#snd{font-size:10px;padding:10px 12px;border-color:var(--gold);color:var(--gold);background:#14091add}
+#snd[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
+#snd[aria-pressed="false"]{animation:blink 1.6s steps(2) infinite}
+#snd2{display:none;margin-top:6px;font-size:13px;padding:14px 18px;border-color:var(--gold);color:var(--gold);background:#14091acc}
+#snd2[aria-pressed="true"]{background:var(--gold);color:var(--ink)}
+body.intro #snd2{display:inline-block}
 .burger{display:none}
 .arrow{top:38%;width:44px;height:56px;display:grid;place-items:center;font-family:var(--px);font-size:18px;background:#14091acc;color:var(--gold);border:3px solid var(--gold);cursor:pointer}
 .arrow:hover{background:var(--gold);color:var(--ink)}
@@ -180,7 +186,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
   <nav class="menu" id="menu" aria-label="Zonas del escenario">
     <a href="#sobre" data-go="sobre">Propuesta</a><a href="#musica" data-go="musica">Música</a><a href="#galeria" data-go="galeria">Fotos</a><a href="#banda" data-go="banda">Banda</a><a href="#rider" data-go="rider">Rider</a><a href="#recursos" data-go="recursos">Material</a><a href="#contacto" data-go="contacto">Booking</a>
   </nav>
-  <div class="tools"><span class="deg" id="deg" aria-hidden="true">000°</span><button class="sbtn" id="snd" type="button" aria-pressed="false">♪ NO</button><button class="sbtn burger" id="burger" type="button" aria-expanded="false" aria-controls="menu">☰</button></div>
+  <div class="tools"><span class="deg" id="deg" aria-hidden="true">000°</span><button class="sbtn" id="snd" type="button" aria-pressed="false">♪ AUDIO OFF</button><button class="sbtn burger" id="burger" type="button" aria-expanded="false" aria-controls="menu">☰</button></div>
 </header>
 <button class="hud arrow l" id="prev" type="button" aria-label="Zona anterior">◀</button>
 <button class="hud arrow r" id="next" type="button" aria-label="Zona siguiente">▶</button>
@@ -194,6 +200,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
     <h1 class="title" aria-label="MNM Trío"><span id="logo-hero" aria-hidden="true"></span><i class="bar" aria-hidden="true"></i><small aria-hidden="true">TRÍO</small></h1>
     <p class="lead">Instrumental - Jazz - Rock - Original - Improvisación</p>
     <button class="btn" id="start" type="button">▶ PRESS START</button>
+    <button class="btn alt" id="snd2" type="button" aria-pressed="true">♪ AUDIO: ON</button>
     <div class="actions"><a class="btn" href="#musica" data-go="musica">Ver videos</a><a class="btn alt" href="#contacto" data-go="contacto">Contrataciones</a></div>
   </div>
 </section>
@@ -875,7 +882,7 @@ let cd = 0;
 function shortest(i) { let d = mod(i - mod(tz, Z), Z); if (d > Z / 2) d -= Z; return d; }
 function goId(id, instant) { const i = ids.indexOf(id); if (i < 0) return; tz += shortest(i); if (instant) camX = tz * ZW; closeMenu(); }
 function stepZ(d) { if (!started || vOpen) return; const n = Date.now(); if (n < cd) return; cd = n + (reduce ? 0 : 650); tz += d; }
-function startShow() { if (introGo) return; introGo = true; }
+function startShow() { if (introGo) return; introGo = true; if (wantMusic) setMusic(true); }
 $('#start').addEventListener('click', startShow);
 $$('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!started) { startShow(); return; } goId(a.dataset.go); }));
 $('#prev').addEventListener('click', () => { cd = 0; stepZ(-1); }); $('#next').addEventListener('click', () => { cd = 0; stepZ(1); });
@@ -1024,10 +1031,15 @@ function sched() { const spb = 60 / 104 / 4; while (nextT < ac.currentTime + .3)
   if (s === 0 || s === 8 || s === 10) tone(150, nextT, .14, 'sine', .3, 45); if (s % 2 === 0) hat(nextT);
   if (s % 2 === 1 && Math.random() < .55) tone(PEN[Math.floor(Math.random() * 5)] * 4, nextT, spb * 1.4, 'square', .035);
   nextT += spb; stepN++; } }
-$('#snd').addEventListener('click', e => { const b = e.currentTarget;
-  if (!initAC()) return;
-  musicOn = !musicOn; b.textContent = musicOn ? '♪ SÍ' : '♪ NO'; b.setAttribute('aria-pressed', String(musicOn));
-  if (musicOn) { ac.resume(); nextT = ac.currentTime + .05; tmr = setInterval(sched, 90); } else { clearInterval(tmr); } });
+let wantMusic = true;   /* elegido en la intro: PRESS START arranca la música si está en ON */
+const sndBtn = $('#snd'), sndBtn2 = $('#snd2');
+function setMusic(on) {
+  if (on && !initAC()) return; musicOn = on; clearInterval(tmr);
+  sndBtn.textContent = on ? '♪ AUDIO ON' : '♪ AUDIO OFF'; sndBtn.setAttribute('aria-pressed', String(on));
+  if (on) { ac.resume(); nextT = ac.currentTime + .05; tmr = setInterval(sched, 90); }
+}
+sndBtn.addEventListener('click', () => setMusic(!musicOn));
+sndBtn2.addEventListener('click', () => { wantMusic = !wantMusic; sndBtn2.textContent = wantMusic ? '♪ AUDIO: ON' : '♪ AUDIO: OFF'; sndBtn2.setAttribute('aria-pressed', String(wantMusic)); });
 
 /* ---------- arranque ---------- */
 function boot() {
