@@ -413,14 +413,14 @@ let camX = 0, tz = 0, started = false, introT = 0, introGo = false, T = 0, fy = 
 const sxw = wx => { let d = (wx - camX) % W; if (d > W / 2) d -= W; if (d < -W / 2) d += W; return Math.round(focal + d); };
 
 /* ---------- hotspots: objetos interactivos del escenario ---------- */
-let HS = [], hover = null, cp = -1, settled = true, mouseX = -999, mouseY = -999, curCur = '';
+let safeLo = 2, safeHi = 0, HS = [], hover = null, cp = -1, settled = true, mouseX = -999, mouseY = -999, curCur = '';
 const bumps = {};
 const bump = (k, d = .4) => { bumps[k] = T + d; };
 const bmp = k => Math.max(0, (bumps[k] || 0) - T);
 const shk = k => { const r = bmp(k); return r > 0 ? Math.round(Math.sin(T * 60) * Math.min(1, r * 4) * 2) : 0; };
 function hot(x, y, ww, hh, fn, label, below) { if (cp === mod(tz, Z) && settled && started && introT >= 1 && !vOpen) HS.push({ x: Math.round(x), y: Math.round(y), w: Math.round(ww), h: Math.round(hh), fn, label, below }); }
 const hit = (px, py) => { for (let i = HS.length - 1; i >= 0; i--) { const o = HS[i]; if (px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) return o; } return null; };
-function plate(cx, y, str, bg, fg, bd, sz = 8, clamp = true) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); if (clamp) lx = Math.max(2, Math.min(w - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
+function plate(cx, y, str, bg, fg, bd, sz = 8, clamp = true) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); if (clamp) lx = Math.max(safeLo, Math.min((safeHi || w) - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
 function bubble(x, y, str) { plate(x, y, str, '#f7ebc8', '#14091a', '#14091a'); R(x - 2, y + 12, 4, 2, '#f7ebc8'); R(x - 1, y + 14, 2, 1, '#f7ebc8'); }
 const tag = (x, y, str) => plate(x, y, str, '#14091a', '#f0b43c', '#f0b43c', 6, false);
 const arrowDn = (x, y, c = '#f0b43c') => { R(x - 3, y, 7, 1, c); R(x - 2, y + 1, 5, 1, c); R(x - 1, y + 2, 3, 1, c); R(x, y + 3, 1, 1, c); };
@@ -830,7 +830,9 @@ function frame(ts) {
   const base = camX; settled = Math.abs(base - tz * ZW) < 24;
   const panT = (!mobile && sel >= 0 && mod(tz, Z) === 4) ? PANDIR[sel] * Math.round(Math.min(400, innerWidth * .34) / 2 / ps) : 0;
   panX += (panT - panX) * (1 - Math.exp(-dt * (reduce ? 60 : 5))); camX = base + Math.round(panX);
-  HS = [];
+  HS = []; safeLo = 2; safeHi = w;
+  if (!mobile) { const zi = mod(tz, Z), pw = Math.min(560, innerWidth * .46);   /* los rótulos no deben quedar bajo el panel lateral */
+    if (zi === 1 || zi === 6) safeHi = Math.floor((innerWidth * .95 - pw) / ps) - 4; else if (zi === 5) safeLo = Math.ceil((innerWidth * .05 + pw) / ps) + 4; }
   drawBackdrop(); drawTruss(); drawFloor();
   const zxs = i => sxw(i * ZW);
   /* focos */
