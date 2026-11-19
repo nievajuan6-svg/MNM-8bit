@@ -210,7 +210,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
     <h1 class="title" aria-label="MNM Trío"><span id="logo-hero" aria-hidden="true"></span><i class="bar" aria-hidden="true"></i><small aria-hidden="true">TRÍO</small></h1>
     <p class="lead">Instrumental - Jazz - Rock - Original - Improvisación</p>
     <button class="btn" id="start" type="button">▶ PRESS START</button>
-    <button class="btn alt" id="snd2" type="button" aria-pressed="true">♪ AUDIO: ON</button>
+    <button class="btn alt" id="snd2" type="button" aria-pressed="false">♪ ACTIVAR AUDIO</button>
     <div class="actions"><a class="btn" href="#musica" data-go="musica">Ver videos</a><a class="btn alt" href="#contacto" data-go="contacto">Contrataciones</a></div>
   </div>
 </section>
@@ -925,7 +925,7 @@ let cd = 0;
 function shortest(i) { let d = mod(i - mod(tz, Z), Z); if (d > Z / 2) d -= Z; return d; }
 function goId(id, instant) { const i = ids.indexOf(id); if (i < 0) return; tz += shortest(i); if (instant) camX = tz * ZW; closeMenu(); }
 function stepZ(d) { if (!started || vOpen || askKey) return; const n = Date.now(); if (n < cd) return; cd = n + (reduce ? 0 : 650); tz += d; }
-function startShow() { if (introGo) return; introGo = true; if (wantMusic) setMusic(true); }
+function startShow() { if (introGo) return; introGo = true; if (!audioTouched) setMusic(true); }
 $('#start').addEventListener('click', startShow);
 $$('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!started) { startShow(); return; } goId(a.dataset.go); }));
 $('#prev').addEventListener('click', () => { cd = 0; stepZ(-1); }); $('#next').addEventListener('click', () => { cd = 0; stepZ(1); });
@@ -1120,16 +1120,17 @@ function sched() {
     nextT += spb; stepN++;
   }
 }
-let wantMusic = true;   /* elegido en la intro: PRESS START arranca la música si está en ON */
+let audioTouched = false;   /* si nunca tocó el botón, PRESS START enciende la música */
 const sndBtn = $('#snd'), sndBtn2 = $('#snd2');
+function syncSnd() { sndBtn2.textContent = musicOn ? '♪ AUDIO: ON' : '♪ ACTIVAR AUDIO'; sndBtn2.setAttribute('aria-pressed', String(musicOn)); }
 function setMusic(on) {
   if (on && !initAC()) return; musicOn = on; clearInterval(tmr);
   if (on) { stepN = 0; lastKey = -1; }
-  sndBtn.textContent = on ? '♪ AUDIO ON' : '♪ AUDIO OFF'; sndBtn.setAttribute('aria-pressed', String(on));
+  sndBtn.textContent = on ? '♪ AUDIO ON' : '♪ AUDIO OFF'; sndBtn.setAttribute('aria-pressed', String(on)); syncSnd();
   if (on) { ac.resume(); nextT = ac.currentTime + .05; tmr = setInterval(sched, 90); }
 }
-sndBtn.addEventListener('click', () => setMusic(!musicOn));
-sndBtn2.addEventListener('click', () => { wantMusic = !wantMusic; sndBtn2.textContent = wantMusic ? '♪ AUDIO: ON' : '♪ AUDIO: OFF'; sndBtn2.setAttribute('aria-pressed', String(wantMusic)); });
+sndBtn.addEventListener('click', () => { audioTouched = true; setMusic(!musicOn); });
+sndBtn2.addEventListener('click', () => { audioTouched = true; setMusic(!musicOn); });
 
 /* ---------- arranque ---------- */
 function boot() {
