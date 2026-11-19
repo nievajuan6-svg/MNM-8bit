@@ -358,12 +358,14 @@ const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [..
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 /* ---------- logo MNM: M, N y M fusionadas compartiendo los palos, en pixel-art ---------- */
 function logoSVG(layers) {
-  const st = 5, D = 22, H = 28, th = 6, W = 3 * D + st; let d = '';
+  /* proporciones del original: 4 palos, el último palo de cada letra es el primero de la siguiente; la N es más angosta */
+  const st = 4, H = 28, th = 5, S = [0, 23, 42, 65], W = S[3] + st; let d = '';
+  const diag = (row, p, x0, x1) => { const a = x0 + (x1 - x0) * p; for (let x = Math.max(0, Math.round(a - th / 2)); x < Math.min(W, Math.round(a + th / 2)); x++) row[x] = 1; };
   for (let y = 0; y < H; y++) {
-    const row = new Uint8Array(W), fill = (a, b) => { for (let x = Math.max(0, Math.round(a)); x < Math.min(W, Math.round(b)); x++) row[x] = 1; }, p = (y + .5) / H;
-    for (let k = 0; k < 4; k++) fill(k * D, k * D + st);
-    [0, 2].forEach(m => { const o = m * D; fill(o + st / 2 + D / 2 * p - th / 2, o + st / 2 + D / 2 * p + th / 2); fill(o + D + st / 2 - D / 2 * p - th / 2, o + D + st / 2 - D / 2 * p + th / 2); });
-    fill(D + st / 2 + D * p - th / 2, D + st / 2 + D * p + th / 2);
+    const row = new Uint8Array(W), p = (y + .5) / H;
+    S.forEach(sx => { for (let x = sx; x < sx + st; x++) row[x] = 1; });
+    [[0, 1], [2, 3]].forEach(([a, b]) => { const c = (S[a] + S[b]) / 2 + st / 2; diag(row, p, S[a] + st / 2, c); diag(row, p, S[b] + st / 2, c); });
+    diag(row, p, S[1] + st / 2, S[2] + st / 2);
     for (let x = 0; x < W;) { if (!row[x]) { x++; continue; } let e = x; while (e < W && row[e]) e++; d += `M${x} ${y}h${e - x}v1h-${e - x}z`; x = e; }
   }
   return `<svg viewBox="0 0 ${W + 6} ${H + 6}" shape-rendering="crispEdges" focusable="false">` + layers.map(([dx, dy, c]) => `<path d="${d}" transform="translate(${dx} ${dy})" fill="${c}"/>`).join('') + '</svg>';
@@ -416,7 +418,7 @@ const bumps = {};
 const bump = (k, d = .4) => { bumps[k] = T + d; };
 const bmp = k => Math.max(0, (bumps[k] || 0) - T);
 const shk = k => { const r = bmp(k); return r > 0 ? Math.round(Math.sin(T * 60) * Math.min(1, r * 4) * 2) : 0; };
-function hot(x, y, ww, hh, fn, label) { if (cp === mod(tz, Z) && settled && started && introT >= 1 && !vOpen) HS.push({ x: Math.round(x), y: Math.round(y), w: Math.round(ww), h: Math.round(hh), fn, label }); }
+function hot(x, y, ww, hh, fn, label, below) { if (cp === mod(tz, Z) && settled && started && introT >= 1 && !vOpen) HS.push({ x: Math.round(x), y: Math.round(y), w: Math.round(ww), h: Math.round(hh), fn, label, below }); }
 const hit = (px, py) => { for (let i = HS.length - 1; i >= 0; i--) { const o = HS[i]; if (px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) return o; } return null; };
 function plate(cx, y, str, bg, fg, bd, sz = 8, clamp = true) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); if (clamp) lx = Math.max(2, Math.min(w - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
 function bubble(x, y, str) { plate(x, y, str, '#f7ebc8', '#14091a', '#14091a'); R(x - 2, y + 12, 4, 2, '#f7ebc8'); R(x - 1, y + 14, 2, 1, '#f7ebc8'); }
@@ -425,7 +427,7 @@ const arrowDn = (x, y, c = '#f0b43c') => { R(x - 3, y, 7, 1, c); R(x - 2, y + 1,
 function drawHover() {
   if (!hover) return; const o = hover, c = Math.floor(T * 4) % 2 ? '#ffe08a' : '#f0b43c', x = o.x, y = o.y, ww = o.w, hh = o.h;
   [[x - 2, y - 2, 1, 1], [x + ww + 1, y - 2, -1, 1], [x - 2, y + hh + 1, 1, -1], [x + ww + 1, y + hh + 1, -1, -1]].forEach(([px, py, sx, sy]) => { R(sx > 0 ? px : px - 4, py, 5, 1, c); R(px, sy > 0 ? py : py - 4, 1, 5, c); });
-  if (o.label) { let ly = y - 17; if (ly < 14) ly = y + hh + 6; plate(x + ww / 2, ly, o.label, '#f0b43c', '#14091a', '#14091a'); }
+  if (o.label) { let ly = o.below ? y + hh + 8 : y - 17; if (ly < 14) ly = y + hh + 6; plate(x + ww / 2, ly, o.label, '#f0b43c', '#14091a', '#14091a'); }
 }
 const DL = { rider: 'rider-tecnico-mnm.pdf', dossier: 'Dossier%20MNM.pdf', drive: 'https://drive.google.com/drive/folders/1pYYdS91ni0eL767dDGwYZU3x_s9TMLy6?usp=drive_link', mail: 'mailto:mnmtrio.contacto@gmail.com' };
 function dl(k) { const a = document.createElement('a'); a.href = DL[k]; if (k === 'rider' || k === 'dossier') a.download = ''; if (k === 'drive') { a.target = '_blank'; a.rel = 'noopener'; } a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); }
@@ -842,8 +844,8 @@ function frame(ts) {
   const vis = (i, r = 190) => Math.abs(zxs(i) - w / 2) < w / 2 + r;
   if (vis(0)) { cp = 0; propsInicio(z0);
     [0, 2, 1].forEach(i => { const x = z0 + [-64, 64, 0][i]; drawChar(i, x, fy + 4, 1, T, i * .33, { play: true, hop: hopH(i) });
-      hot(x - 24, fy - 50, 48, 54, () => { hop[i] = .45; say[i] = .9; sayT[i] = ['HOLA!', 'VAMOS!', 'EY!'][i]; burst(x, fy - 52, 5); sfx('blip'); }, CH[i].name.toUpperCase());
-      if (say[i] > 0) bubble(x - 26, fy - 48, sayT[i]); });
+      hot(x - 24, fy - 50, 48, 54, () => { hop[i] = .45; say[i] = .9; sayT[i] = ['HOLA!', 'VAMOS!', 'EY!'][i]; burst(x, fy - 52, 5); sfx('blip'); }, CH[i].name.toUpperCase(), true);
+      if (say[i] > 0) bubble(x - 30, fy - 26, sayT[i]); });
     if (P.pos < .6 || P.pos > Z - .6) { if (Math.random() < .05) note(z0 + (Math.random() - .5) * 120, fy - 50); } }
   if (vis(1)) { cp = 1; propsSobre(z1, T); }
   if (vis(2)) { cp = 2; propsMusica(zxs(2)); }
