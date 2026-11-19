@@ -141,6 +141,8 @@ a.sr:focus{width:auto;height:auto;clip:auto;left:50%;top:64px;transform:translat
 .viewer{position:absolute;inset:0;pointer-events:auto;background:rgba(10,6,20,0)}
 .viewer[hidden]{display:none}
 .zone[data-side] .viewer .vpanel{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(580px,92vw);max-height:calc(100% - 70px)}
+.zone[data-side] .viewer .vpanel.wide{width:min(700px,92vw)}
+.vcard{margin-top:0}
 .vmask{position:fixed;pointer-events:none;image-rendering:pixelated;z-index:3}
 
 /* ---------- móvil ---------- */
@@ -201,20 +203,26 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
     <p>MNM Trío es una formación instrumental de Córdoba, Argentina, que explora el jazz contemporáneo y la improvisación desde un lenguaje abierto, dinámico y expresivo.</p>
     <p>Integrado por Álvaro Medrano en bajo, Juan Nieva en guitarra y André Maurel en batería, el trío reúne recorridos por el jazz, el rock, el folklore y la música latinoamericana.</p>
     <p>La propuesta funciona en escenarios de escucha, festivales, salas, galerías, espacios culturales y eventos que buscan un show instrumental con intensidad y adaptación al lugar.</p>
+    <p class="tip">▶ Tocá los instrumentos del escenario: la batería, el bajo y la guitarra suenan.</p>
     <ul class="facts"><li><b>Formación</b><span>Trío instrumental</span></li><li><b>Duración</b><span>50-70 minutos</span></li><li><b>Formato</b><span>Acústico o amplificado</span></li><li><b>Base</b><span>Córdoba, Argentina</span></li><li><b>Ideal para</b><span>Festivales, salas y eventos culturales</span></li></ul>
   </div>
 </section>
 
 <!-- 2 MÚSICA -->
 <section class="zone" id="z-musica" data-id="musica" data-side="C" aria-label="Escuchanos">
-  <div class="panel">
-    <div class="eyebrow">· escuchanos</div>
-    <div class="row" style="justify-content:space-between"><h2>Producciones Audiovisuales</h2><a class="btn alt" href="https://www.youtube.com/@MNM.Tr%C3%ADo" target="_blank" rel="noopener">Canal de YouTube ↗</a></div>
-    <div class="cards">
-      <article class="card"><div class="vframe" data-yt="z4h0FmdXn4w"><button type="button" data-title="MNM Trío - ATENTO" aria-label="Reproducir: ATENTO"><img src="https://i.ytimg.com/vi/z4h0FmdXn4w/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Original · MNM Trío</div><h3>ATENTO</h3><p>Tema original de MNM Trío.</p><div class="credits">Video y edición: Esteban Camandone<br>Grabación, mezcla y mastering: Tomás Cerrada</div></article>
-      <article class="card"><div class="vframe" data-yt="i4ovNNF43do"><button type="button" data-title="MNM Trío - Tordo músico" aria-label="Reproducir: Tordo músico"><img src="https://i.ytimg.com/vi/i4ovNNF43do/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Diego Schissi</div><h3>Tordo músico</h3><p>Obra de Diego Schissi interpretada por MNM Trío.</p><div class="credits">Batería: André Maurel · Guitarra: Juan Nieva · Bajo: Álvaro Medrano</div></article>
-      <article class="card"><div class="vframe" data-yt="EPgMi-vJnwY"><button type="button" data-title="MNM Trío - Brooklyn high" aria-label="Reproducir: Brooklyn high"><img src="https://i.ytimg.com/vi/EPgMi-vJnwY/hqdefault.jpg" alt="" loading="lazy"><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Nelson Faria</div><h3>Brooklyn high</h3><p>Obra del músico brasilero Nelson Faria interpretada por MNM Trío.</p><div class="credits">Batería: André Maurel · Guitarra: Juan Nieva · Bajo: Álvaro Medrano</div></article>
+  <p class="stagehint" id="hint-mus">▲ TOCÁ UNA PANTALLA PARA VER EL VIDEO ▲</p>
+  <div class="cast" role="group" aria-label="Videos">
+    <button class="cbtn" type="button" data-vid="0">▶ ATENTO</button><button class="cbtn" type="button" data-vid="1">▶ TORDO MÚSICO</button><button class="cbtn" type="button" data-vid="2">▶ BROOKLYN HIGH</button>
+  </div>
+  <div class="viewer" id="vviewer" hidden aria-hidden="true">
+    <div class="panel vpanel wide" role="dialog" aria-label="Reproductor de video">
+      <div class="row" style="justify-content:space-between;align-items:flex-start"><div><div class="eyebrow">· escuchanos</div><h2 style="margin:0 0 12px">Producciones Audiovisuales</h2></div><button class="btn alt" id="vvclose" type="button" aria-label="Cerrar reproductor" style="margin:0">✕</button></div>
+      <article class="card vcard" hidden><div class="vframe" data-yt="z4h0FmdXn4w"><button type="button" data-title="MNM Trío - ATENTO" aria-label="Reproducir: ATENTO"><img src="https://i.ytimg.com/vi/z4h0FmdXn4w/hqdefault.jpg" alt=""><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Original · MNM Trío</div><h3>ATENTO</h3><p>Tema original de MNM Trío.</p><div class="credits">Video y edición: Esteban Camandone<br>Grabación, mezcla y mastering: Tomás Cerrada</div></article>
+      <article class="card vcard" hidden><div class="vframe" data-yt="i4ovNNF43do"><button type="button" data-title="MNM Trío - Tordo músico" aria-label="Reproducir: Tordo músico"><img src="https://i.ytimg.com/vi/i4ovNNF43do/hqdefault.jpg" alt=""><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Diego Schissi</div><h3>Tordo músico</h3><p>Obra de Diego Schissi interpretada por MNM Trío.</p><div class="credits">Batería: André Maurel · Guitarra: Juan Nieva · Bajo: Álvaro Medrano</div></article>
+      <article class="card vcard" hidden><div class="vframe" data-yt="EPgMi-vJnwY"><button type="button" data-title="MNM Trío - Brooklyn high" aria-label="Reproducir: Brooklyn high"><img src="https://i.ytimg.com/vi/EPgMi-vJnwY/hqdefault.jpg" alt=""><span class="play" aria-hidden="true">▶</span></button></div><div class="role">Nelson Faria</div><h3>Brooklyn high</h3><p>Obra del músico brasilero Nelson Faria interpretada por MNM Trío.</p><div class="credits">Batería: André Maurel · Guitarra: Juan Nieva · Bajo: Álvaro Medrano</div></article>
+      <div class="crow"><button class="btn alt" id="vvprev" type="button" aria-label="Video anterior">←</button><a class="btn alt" href="https://www.youtube.com/@MNM.Tr%C3%ADo" target="_blank" rel="noopener" style="margin:0">Canal de YouTube ↗</a><button class="btn alt" id="vvnext" type="button" aria-label="Video siguiente">→</button></div>
     </div>
+    <canvas class="vmask" aria-hidden="true"></canvas>
   </div>
 </section>
 
@@ -237,7 +245,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
         <div class="crow"><button class="btn alt" id="cprev" type="button" aria-label="Foto anterior">←</button><span class="mono" id="ccount" role="status" aria-live="polite">01 / 04</span><button class="btn alt" id="cnext" type="button" aria-label="Foto siguiente">→</button></div>
       </div>
     </div>
-    <canvas class="vmask" id="vmask" aria-hidden="true"></canvas>
+    <canvas class="vmask" aria-hidden="true"></canvas>
   </div>
 </section>
 
@@ -385,9 +393,9 @@ const bmp = k => Math.max(0, (bumps[k] || 0) - T);
 const shk = k => { const r = bmp(k); return r > 0 ? Math.round(Math.sin(T * 60) * Math.min(1, r * 4) * 2) : 0; };
 function hot(x, y, ww, hh, fn, label) { if (cp === mod(tz, Z) && settled && started && introT >= 1 && !vOpen) HS.push({ x: Math.round(x), y: Math.round(y), w: Math.round(ww), h: Math.round(hh), fn, label }); }
 const hit = (px, py) => { for (let i = HS.length - 1; i >= 0; i--) { const o = HS[i]; if (px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) return o; } return null; };
-function plate(cx, y, str, bg, fg, bd, sz = 8) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); lx = Math.max(2, Math.min(w - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
+function plate(cx, y, str, bg, fg, bd, sz = 8, clamp = true) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); if (clamp) lx = Math.max(2, Math.min(w - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
 function bubble(x, y, str) { plate(x, y, str, '#f7ebc8', '#14091a', '#14091a'); R(x - 2, y + 12, 4, 2, '#f7ebc8'); R(x - 1, y + 14, 2, 1, '#f7ebc8'); }
-const tag = (x, y, str) => plate(x, y, str, '#14091a', '#f0b43c', '#f0b43c', 6);
+const tag = (x, y, str) => plate(x, y, str, '#14091a', '#f0b43c', '#f0b43c', 6, false);
 const arrowDn = (x, y, c = '#f0b43c') => { R(x - 3, y, 7, 1, c); R(x - 2, y + 1, 5, 1, c); R(x - 1, y + 2, 3, 1, c); R(x, y + 3, 1, 1, c); };
 function drawHover() {
   if (!hover) return; const o = hover, c = Math.floor(T * 4) % 2 ? '#ffe08a' : '#f0b43c', x = o.x, y = o.y, ww = o.w, hh = o.h;
@@ -584,17 +592,61 @@ function propsInicio(zx) {
     amp(zx + dx + sk, fy - 2, 24, 40); amp(zx + dx + sk, fy - 42, 24, 30); });
   R(zx - 84, fy + 6, 22, 5, '#222'); R(zx + 62, fy + 6, 22, 5, '#222');
 }
+/* ---------- Propuesta: los tres instrumentos, cada uno suena con su audio ----------
+   Cuando grabemos las frases, poner la ruta acá (null = suena un sonido sintetizado de prueba):
+   drums = batería de Maurel · bass = bajo de Medrano · guitar = guitarra de Nieva */
+const AUDIO_FILES = { drums: null, bass: null, guitar: null };   // ej: drums: 'assets/audio/bateria.mp3'
+const iaud = {}, iplay = { drums: 0, bass: 0, guitar: 0 };
+const isPlaying = k => iplay[k] > T;
+function initAC() { if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return false; ac = new AC(); master = ac.createGain(); master.gain.value = .6; master.connect(ac.destination); } if (ac.state === 'suspended') ac.resume(); return true; }
+function noise(t0, d, v, hp) { const n = Math.floor(ac.sampleRate * d), b = ac.createBuffer(1, n, ac.sampleRate), c = b.getChannelData(0); for (let i = 0; i < n; i++) c[i] = Math.random() * 2 - 1; const s = ac.createBufferSource(), g = ac.createGain(), f = ac.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = hp; s.buffer = b; g.gain.setValueAtTime(v, t0); g.gain.exponentialRampToValueAtTime(.0001, t0 + d); s.connect(f); f.connect(g); g.connect(master); s.start(t0); }
+function synth(k) {
+  const t0 = ac.currentTime + .02;
+  if (k === 'drums') { [0, .5, .9].forEach(o => tone(160, t0 + o, .16, 'sine', .5, 45)); [.25, .75, 1.0, 1.1].forEach(o => { noise(t0 + o, .13, .3, 1200); tone(190, t0 + o, .1, 'triangle', .2, 120); }); for (let i = 0; i < 9; i++) noise(t0 + i * .15, .04, .09, 6000); }
+  else if (k === 'bass') { [[55, 0], [55, .25], [65.4, .5], [73.4, .75], [82.4, 1], [73.4, 1.25]].forEach(([f, o]) => tone(f, t0 + o, .26, 'triangle', .5)); }
+  else { [[220, 0], [261.6, .06], [329.6, .12], [392, .18]].forEach(([f, o]) => tone(f, t0 + o, .9, 'sawtooth', .07)); [[440, .6], [392, .8], [329.6, 1], [392, 1.2]].forEach(([f, o]) => tone(f, t0 + o, .22, 'square', .06)); }
+}
+function playInstr(k) {
+  if (!initAC()) return; bump(k, .5);
+  const f = AUDIO_FILES[k];
+  if (f) { const o = iaud[k] || (iaud[k] = new Audio(f)); o.currentTime = 0; o.play().catch(() => synth(k)); iplay[k] = T + (isFinite(o.duration) && o.duration ? o.duration : 4); }
+  else { synth(k); iplay[k] = T + 1.5; }
+}
+function drawKit(x, y, on) {
+  const fr = on ? Math.floor(T * 10) % 2 : 0, jx = on ? Math.round(Math.sin(T * 45)) : 0;
+  R(x - 21, y - 44, 1, 44, '#8a8a99'); R(x + 19, y - 42, 1, 42, '#8a8a99'); R(x - 29, y - 28, 1, 28, '#8a8a99');
+  R(x - 30, y - 47 + fr, 18, 3, '#f0b43c'); R(x - 29, y - 48 + fr, 16, 1, '#ffe08a'); R(x + 12, y - 45 + (on ? 1 - fr : 0), 20, 3, '#e0a02c'); R(x + 13, y - 46, 18, 1, '#ffe08a'); R(x - 34, y - 30, 10, 2, '#d99a2a');
+  R(x - 4, y - 14, 10, 3, '#222'); R(x, y - 11, 2, 11, '#555');
+  R(x - 17, y - 28, 11, 8, '#7a1220'); R(x - 18, y - 27, 1, 6, '#c8c8d0'); R(x - 17, y - 29, 11, 1, '#f7ebc8'); R(x + 6, y - 28, 11, 8, '#7a1220'); R(x + 17, y - 27, 1, 6, '#c8c8d0'); R(x + 6, y - 29, 11, 1, '#f7ebc8');
+  R(x - 7 + jx, y - 22, 14, 21, '#7a1220'); R(x - 9 + jx, y - 19, 18, 15, '#7a1220'); R(x - 6 + jx, y - 20, 12, 17, '#f7ebc8'); R(x - 8 + jx, y - 17, 16, 11, '#f7ebc8'); R(x - 9 + jx, y - 19, 1, 15, '#f0b43c'); R(x + 8 + jx, y - 19, 1, 15, '#f0b43c');
+  R(x - 4 + jx, y - 16, 2, 7, '#a8201e'); R(x + 2 + jx, y - 16, 2, 7, '#a8201e'); R(x - 3 + jx, y - 15, 6, 2, '#a8201e'); R(x - 1 + jx, y - 13, 2, 2, '#a8201e');
+  if (on) { const a = fr ? [x - 11, y - 27] : [x - 14, y - 34], b = fr ? [x + 12, y - 34] : [x + 10, y - 27]; line(a[0], a[1], a[0] - 5, a[1] - 5, '#e9d29a'); line(b[0], b[1], b[0] + 5, b[1] - 5, '#e9d29a'); }
+  else { line(x - 12, y - 31, x - 3, y - 28, '#e9d29a'); line(x + 12, y - 31, x + 3, y - 28, '#e9d29a'); }
+}
+function drawStrings(x, y, on, body, light, neck, h, bass) {
+  const j = on ? Math.round(Math.sin(T * 40)) : 0, bx = x + j;
+  line(x, y - 16, x - 9, y, '#6a6a78'); line(x, y - 16, x + 9, y, '#6a6a78'); R(x - 2, y - 17, 5, 3, '#6a6a78');
+  const bw = bass ? 16 : 18;
+  R(bx - bw / 2, y - 34, bw, 18, body); R(bx - bw / 2 + 2, y - 37, bw - 4, 24, body); R(bx - bw / 2 + 2, y - 36, bw - 4, 1, light);
+  if (bass) { R(bx - 4, y - 27, 8, 3, '#2a2a2a'); R(bx - 3, y - 22, 6, 2, '#d8d0b8'); } else { R(bx - 4, y - 29, 8, 11, '#f7ebc8'); R(bx - 3, y - 27, 6, 1, '#1a1018'); R(bx - 3, y - 24, 6, 1, '#1a1018'); }
+  R(bx - 1, y - h, 3, h - 34, neck); R(bx - 2, y - h - 6, 5, 7, neck); R(bx + 2, y - h - 5, 2, 1, '#d8d0b8'); R(bx - 4, y - h - 3, 2, 1, '#d8d0b8');
+  R(bx + (on ? (Math.floor(T * 30) % 2 ? 1 : -1) : 0), y - h + 2, 1, h - 36, '#d8d0b8');
+}
 function propsSobre(zx, t) {
-  const sa = shk('amp1'), sm = shk('mic'), g = zx + shk('ag');
-  hot(zx - 100, fy - 74, 26, 72, () => { bump('amp1'); burst(zx - 87, fy - 60); sfx('amp'); }, 'PROBAR AMP');
-  amp(zx - 100 + sa, fy - 2, 26, 42); amp(zx - 100 + sa, fy - 44, 26, 28); R(zx - 64, fy + 2, 24, 7, '#222'); R(zx - 62, fy + 3, 20, 2, '#3a3340');
-  hot(zx - 10, fy - 44, 20, 46, () => { bump('mic'); burst(zx, fy - 42, 6); sfx('blip'); }, 'PROBAR MIC');
-  R(zx, fy - 36, 1, 36, '#9a9aa8'); R(zx - 7, fy - 1, 15, 2, '#6a6a78'); R(zx - 3 + sm, fy - 40, 7, 7, '#444'); R(zx - 2 + sm, fy - 41, 5, 2, '#9a9aa8');
-  R(zx + 26, fy - 20, 12, 3, '#c8282a'); R(zx + 28, fy - 17, 2, 17, '#6a6a78'); R(zx + 34, fy - 17, 2, 17, '#6a6a78');
-  hot(zx + 42, fy - 50, 18, 52, () => { bump('ag', .5); burst(zx + 50, fy - 30, 7); sfx('strum'); }, 'RASGUEAR');
-  R(g + 44, fy - 20, 12, 18, '#c8742c'); R(g + 46, fy - 22, 8, 22, '#c8742c'); R(g + 48, fy - 14, 4, 4, '#2a1a10'); R(g + 49, fy - 44, 2, 24, '#3a2418'); R(g + 48, fy - 48, 4, 5, '#3a2418');
+  const bx = zx - 66, kx = zx + 8, gx = zx + 68;
+  if (isPlaying('bass')) beam(bx, 40, bx, fy + 8, 4, 20, '#ffe08a', .2);
+  if (isPlaying('drums')) beam(kx, 40, kx, fy + 8, 5, 30, '#ffe08a', .2);
+  if (isPlaying('guitar')) beam(gx, 40, gx, fy + 8, 4, 20, '#ffe08a', .2);
+  drawStrings(bx, fy, isPlaying('bass'), '#6a2c12', '#b86a2a', '#2a1a10', 78, true);
+  drawKit(kx, fy, isPlaying('drums'));
+  drawStrings(gx, fy, isPlaying('guitar'), '#1a1018', '#f7ebc8', '#3a2418', 72, false);
+  hot(bx - 14, fy - 86, 28, 88, () => playInstr('bass'), 'BAJO DE MEDRANO');
+  hot(kx - 36, fy - 52, 72, 54, () => playInstr('drums'), 'BATERIA DE MAUREL');
+  hot(gx - 14, fy - 80, 28, 82, () => playInstr('guitar'), 'GUITARRA DE NIEVA');
+  [['bass', bx, 'MEDRANO'], ['drums', kx, 'MAUREL'], ['guitar', gx, 'NIEVA']].forEach(([k, x, n]) => { tag(x, fy + 8, n); if (isPlaying(k)) { if (Math.random() < .35) note(x + (Math.random() - .5) * 20, fy - 70); } else arrowDn(x, fy - 94 + Math.round(Math.sin(t * 3 + x) * 2)); });
   alpha(.5, () => { for (let i = 0; i < 7; i++) { const px = zx - 28 + ((i * 41 + Math.floor(T * 10)) % 56), py = fy - 70 + ((i * 29 + Math.floor(T * 6)) % 60); R(px, py, 1, 1, '#f7ebc8'); } });
 }
+
 let scrHot = -1;
 const VNAMES = ['ATENTO', 'TORDO MUSICO', 'BROOKLYN HIGH'];
 function glow(k) { const c = $$('#z-musica .card')[k]; if (!c) return; c.classList.add('glow'); setTimeout(() => c.classList.remove('glow'), 1500); }
@@ -611,7 +663,7 @@ function propsMusica(zx) {
     R(sx, sy, sw, 3, 'rgba(255,255,255,.07)'); for (let y = sy; y < sy + sh; y += 3) R(sx, y, sw, 1, 'rgba(0,0,0,.25)');
     R(sx + 2, sy + 2, 12, 2, 'rgba(255,255,255,.18)'); R(x + 20, ty + 34, 3, 3, '#c8282a'); R(x + 14, ty + 34, 3, 3, '#f0b43c');
     if (scrHot === k) { const c = Math.floor(T * 4) % 2 ? '#ffe08a' : '#f0b43c'; R(x - 30, ty - 2, 60, 2, c); R(x - 30, ty + 44, 60, 2, c); R(x - 30, ty - 2, 2, 48, c); R(x + 28, ty - 2, 2, 48, c); }
-    hot(x - 28, ty, 56, 44, () => { bump('scr' + k, .5); sfx('blip'); glow(k); }, VNAMES[k]);
+    hot(x - 28, ty, 56, 44, () => { bump('scr' + k, .35); sfx('blip'); openVideo(k); }, 'VER ' + VNAMES[k]);
     flight(x - 30, fy - 0, 60, 38);
   });
 }
@@ -782,7 +834,7 @@ const zones = $$('.zone'), ids = zones.map(z => z.dataset.id), dotsEl = $('#dots
 ids.forEach(() => dotsEl.appendChild(document.createElement('i')));
 let shownZ = -1;
 function updateHud() {
-  const z = mod(tz, Z); if (z !== shownZ) { const pz = shownZ; shownZ = z; if (pz === 4) selectChar(-1); if (pz === 3) closeViewer(true);
+  const z = mod(tz, Z); if (z !== shownZ) { const pz = shownZ; shownZ = z; if (pz === 4) selectChar(-1); if (pz === 3 || pz === 2) closeViewer(true);
     zones.forEach((el, i) => { const on = i === z; el.classList.toggle('on', on); el.toggleAttribute('inert', !on); el.setAttribute('aria-hidden', on ? 'false' : 'true'); });
     $$('i', dotsEl).forEach((d, i) => d.classList.toggle('on', i === z)); $$('#menu a').forEach(a => a.classList.toggle('on', a.dataset.go === ids[z]));
     try { history.replaceState(null, '', '#' + ids[z]); } catch (e) {}
@@ -813,7 +865,7 @@ addEventListener('touchend', e => { if (!started || vOpen) return; const t = e.c
   if (Math.max(Math.abs(dx), Math.abs(dy)) > 40) stepZ((Math.abs(dx) > Math.abs(dy) ? dx : dy) < 0 ? 1 : -1); }, { passive: true });
 addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input,textarea,select')) return;
-  if (vOpen) { if (e.key === 'Escape') { e.preventDefault(); closeViewer(); } else if (e.key === 'ArrowLeft') { e.preventDefault(); showC(ci - 1); } else if (e.key === 'ArrowRight') { e.preventDefault(); showC(ci + 1); } return; }
+  if (vOpen) { if (e.key === 'Escape') { e.preventDefault(); closeViewer(); } else if (e.key === 'ArrowLeft' && curV && curV.step) { e.preventDefault(); curV.step(-1); } else if (e.key === 'ArrowRight' && curV && curV.step) { e.preventDefault(); curV.step(1); } return; }
   if (e.key === 'Escape' && sel >= 0) { selectChar(-1); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { if (document.activeElement && document.activeElement.id === 'start') return; e.preventDefault(); startShow(); } return; }
   const inPanel = e.target.closest && e.target.closest('.panel');
@@ -847,51 +899,73 @@ const tr = $('#ctrack'), nS = tr.children.length, cc = $('#ccount'); let ci = 0;
 function showC(i) { ci = mod(i, nS); tr.style.transform = `translateX(-${ci * 100}%)`; cc.textContent = `${String(ci + 1).padStart(2, '0')} / ${String(nS).padStart(2, '0')}`; }
 $('#cprev').addEventListener('click', () => showC(ci - 1)); $('#cnext').addEventListener('click', () => showC(ci + 1));
 
-/* visor de fotos: se arma a partir de cuadraditos */
-const viewer = $('#viewer'), vmask = $('#vmask'), vctx = vmask.getContext('2d'), vpanel = $('.vpanel', viewer), hintGal = $('#hint-gal'), CELL = 12;
-let vP = 0, vDir = 0, vRaf = 0, vLast = 0, vCols = 0, vRows = 0, vTiny = null, vA = null, vB = null;
-function buildMosaic() {
-  const r = vpanel.getBoundingClientRect(); vCols = Math.max(4, Math.ceil(r.width / CELL)); vRows = Math.max(4, Math.ceil(r.height / CELL));
-  Object.assign(vmask.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
-  vmask.width = vCols; vmask.height = vRows; vctx.imageSmoothingEnabled = false;
-  vTiny = document.createElement('canvas'); vTiny.width = vCols; vTiny.height = vRows; const g = vTiny.getContext('2d');
-  g.fillStyle = '#120a1c'; g.fillRect(0, 0, vCols, vRows); g.fillStyle = '#f0b43c'; g.fillRect(0, 0, vCols, 1); g.fillRect(0, vRows - 1, vCols, 1); g.fillRect(0, 0, 1, vRows); g.fillRect(vCols - 1, 0, 1, vRows);
-  const kx = vCols / r.width, ky = vRows / r.height, vw = $('.cview', viewer).getBoundingClientRect(), vx = (vw.left - r.left) * kx, vy = (vw.top - r.top) * ky, vww = vw.width * kx, vhh = vw.height * ky;
-  g.fillStyle = '#000'; g.fillRect(vx, vy, vww, vhh);
-  const im = tr.children[ci].querySelector('img');
-  if (im && im.complete && im.naturalWidth) { const k = Math.min(vww / im.naturalWidth, vhh / im.naturalHeight), dw = im.naturalWidth * k, dh = im.naturalHeight * k; g.imageSmoothingEnabled = true; g.drawImage(im, vx + (vww - dw) / 2, vy + (vhh - dh) / 2, dw, dh); }
-  vA = new Float32Array(vCols * vRows); vB = new Float32Array(vCols * vRows);
-  for (let i = 0; i < vA.length; i++) { vA[i] = Math.random() * .3; vB[i] = .45 + Math.random() * .4; }
+/* visores que se arman a partir de cuadraditos (fotos y videos) */
+let curV = null;
+function makeViewer(o) {
+  const root = $(o.root), mask = $('.vmask', root), panel = $('.vpanel', root), hint = $(o.hint), mctx = mask.getContext('2d'), CELL = 12;
+  let P = 0, dir = 0, raf = 0, last = 0, cols = 0, rows = 0, tiny = null, A = null, B = null, revealed = false, isOpen = false;
+  function build() {
+    const r = panel.getBoundingClientRect(); cols = Math.max(4, Math.ceil(r.width / CELL)); rows = Math.max(4, Math.ceil(r.height / CELL));
+    Object.assign(mask.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+    mask.width = cols; mask.height = rows; mctx.imageSmoothingEnabled = false;
+    tiny = document.createElement('canvas'); tiny.width = cols; tiny.height = rows; const g = tiny.getContext('2d');
+    g.fillStyle = '#120a1c'; g.fillRect(0, 0, cols, rows); g.fillStyle = '#f0b43c'; g.fillRect(0, 0, cols, 1); g.fillRect(0, rows - 1, cols, 1); g.fillRect(0, 0, 1, rows); g.fillRect(cols - 1, 0, 1, rows);
+    const kx = cols / r.width, ky = rows / r.height, hr = o.hero().getBoundingClientRect(), vx = (hr.left - r.left) * kx, vy = (hr.top - r.top) * ky, vw = hr.width * kx, vh = hr.height * ky;
+    g.fillStyle = '#000'; g.fillRect(vx, vy, vw, vh);
+    const im = o.img();
+    if (im && im.complete && im.naturalWidth) { const k = Math.min(vw / im.naturalWidth, vh / im.naturalHeight), dw = im.naturalWidth * k, dh = im.naturalHeight * k; g.imageSmoothingEnabled = true; g.drawImage(im, vx + (vw - dw) / 2, vy + (vh - dh) / 2, dw, dh); }
+    A = new Float32Array(cols * rows); B = new Float32Array(cols * rows);
+    for (let i = 0; i < A.length; i++) { A[i] = Math.random() * .3; B[i] = .45 + Math.random() * .4; }
+  }
+  function draw() {
+    mctx.clearRect(0, 0, cols, rows);
+    for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) { const i = y * cols + x, a = Math.min(1, Math.max(0, (P - A[i]) * 8)) * (1 - Math.min(1, Math.max(0, (P - B[i]) * 8)));
+      if (a <= .02) continue; mctx.globalAlpha = Math.ceil(a * 4) / 4; mctx.drawImage(tiny, x, y, 1, 1, x, y, 1, 1); }
+    mctx.globalAlpha = 1;
+    panel.style.visibility = P > .42 ? 'visible' : 'hidden';
+    if (P > .42 && dir > 0 && !revealed) { revealed = true; if (o.onReveal) o.onReveal(); }
+    root.style.background = `rgba(10,6,20,${(.62 * Math.min(1, P * 2.5)).toFixed(2)})`;
+  }
+  function finish() { raf = 0; vOpen = false; isOpen = false; if (curV === api) curV = null; root.hidden = true; root.setAttribute('aria-hidden', 'true'); mctx.clearRect(0, 0, cols || 1, rows || 1); hint.style.visibility = 'visible'; }
+  function tick(now) {
+    const dt = Math.min(.05, (now - last) / 1000 || .016); last = now; P = Math.max(0, Math.min(1, P + dir * dt / 1.1)); draw();
+    if (dir > 0 && P >= 1) { mctx.clearRect(0, 0, cols, rows); raf = 0; return; }
+    if (dir < 0 && P <= 0) { finish(); return; }
+    raf = requestAnimationFrame(tick);
+  }
+  const api = {
+    step: o.step,
+    open(i) {
+      if (vOpen) return; if (o.onOpen) o.onOpen(i); vOpen = true; isOpen = true; curV = api; revealed = false; root.hidden = false; root.setAttribute('aria-hidden', 'false'); hint.style.visibility = 'hidden';
+      if (reduce) { P = 1; panel.style.visibility = 'visible'; root.style.background = 'rgba(10,6,20,.62)'; if (o.onReveal) o.onReveal(); $(o.closeBtn).focus(); return; }
+      panel.style.visibility = 'hidden'; build(); P = 0; dir = 1; last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
+      setTimeout(() => { if (isOpen && dir > 0) $(o.closeBtn).focus(); }, 600);
+    },
+    close(instant) {
+      if (!isOpen) return; cancelAnimationFrame(raf); if (o.onClose) o.onClose();
+      if (instant || reduce) { P = 0; finish(); return; }
+      build(); dir = -1; last = performance.now(); raf = requestAnimationFrame(tick);
+    }
+  };
+  root.addEventListener('click', e => { if (e.target === root) api.close(); });
+  $(o.closeBtn).addEventListener('click', () => api.close());
+  return api;
 }
-function vDraw() {
-  vctx.clearRect(0, 0, vCols, vRows);
-  for (let y = 0; y < vRows; y++) for (let x = 0; x < vCols; x++) { const i = y * vCols + x, a = Math.min(1, Math.max(0, (vP - vA[i]) * 8)) * (1 - Math.min(1, Math.max(0, (vP - vB[i]) * 8)));
-    if (a <= .02) continue; vctx.globalAlpha = Math.ceil(a * 4) / 4; vctx.drawImage(vTiny, x, y, 1, 1, x, y, 1, 1); }
-  vctx.globalAlpha = 1;
-  vpanel.style.visibility = vP > .42 ? 'visible' : 'hidden';
-  viewer.style.background = `rgba(10,6,20,${(.62 * Math.min(1, vP * 2.5)).toFixed(2)})`;
-}
-function finishClose() { vRaf = 0; vOpen = false; viewer.hidden = true; viewer.setAttribute('aria-hidden', 'true'); vctx.clearRect(0, 0, vCols || 1, vRows || 1); hintGal.style.visibility = 'visible'; }
-function vTick(now) {
-  const dt = Math.min(.05, (now - vLast) / 1000 || .016); vLast = now; vP = Math.max(0, Math.min(1, vP + vDir * dt / 1.1)); vDraw();
-  if (vDir > 0 && vP >= 1) { vctx.clearRect(0, 0, vCols, vRows); vRaf = 0; return; }
-  if (vDir < 0 && vP <= 0) { finishClose(); return; }
-  vRaf = requestAnimationFrame(vTick);
-}
-function openViewer(i) {
-  if (vOpen) return; showC(i); vOpen = true; viewer.hidden = false; viewer.setAttribute('aria-hidden', 'false'); hintGal.style.visibility = 'hidden';
-  if (reduce) { vP = 1; vpanel.style.visibility = 'visible'; viewer.style.background = 'rgba(10,6,20,.62)'; $('#vclose').focus(); return; }
-  vpanel.style.visibility = 'hidden'; buildMosaic(); vP = 0; vDir = 1; vLast = performance.now(); cancelAnimationFrame(vRaf); vRaf = requestAnimationFrame(vTick);
-  setTimeout(() => { if (vOpen && vDir > 0) $('#vclose').focus(); }, 600);
-}
-function closeViewer(instant) {
-  if (!vOpen) return; cancelAnimationFrame(vRaf);
-  if (instant || reduce) { vP = 0; finishClose(); return; }
-  buildMosaic(); vDir = -1; vLast = performance.now(); vRaf = requestAnimationFrame(vTick);
-}
-viewer.addEventListener('click', e => { if (e.target === viewer) closeViewer(); });
-$('#vclose').addEventListener('click', () => closeViewer());
+const photoV = makeViewer({ root: '#viewer', hint: '#hint-gal', closeBtn: '#vclose', hero: () => $('#viewer .cview'), img: () => tr.children[ci].querySelector('img'), onOpen: i => showC(i), step: d => showC(ci + d) });
+const openViewer = i => photoV.open(i), closeViewer = instant => { if (curV) curV.close(instant); };
 $$('[data-ph]').forEach(b => b.addEventListener('click', () => openViewer(+b.dataset.ph)));
+
+/* videos: el reproductor aparece al tocar una pantalla */
+const vcards = $$('#vviewer .vcard'); let vi = 0;
+vcards.forEach(c => { const f = $('.vframe', c); f._orig = f.innerHTML; });
+function resetVid() { vcards.forEach(c => { const f = $('.vframe', c); f.innerHTML = f._orig; }); }
+function showVid(i) { vi = mod(i, vcards.length); resetVid(); vcards.forEach((c, k) => { c.hidden = k !== vi; }); }
+function loadVid() { const f = $('.vframe', vcards[vi]), b = $('button', f); if (!b) return; const ifr = document.createElement('iframe');
+  ifr.src = 'https://www.youtube.com/embed/' + f.dataset.yt + '?autoplay=1&rel=0'; ifr.title = b.dataset.title; ifr.allow = 'autoplay; encrypted-media; picture-in-picture; web-share; fullscreen'; ifr.allowFullscreen = true; ifr.addEventListener('load', () => { const c = $('#vvclose'); if (c) c.focus(); }); f.replaceChildren(ifr); }
+const videoV = makeViewer({ root: '#vviewer', hint: '#hint-mus', closeBtn: '#vvclose', hero: () => $('#vviewer .vcard:not([hidden]) .vframe'), img: () => $('#vviewer .vcard:not([hidden]) .vframe img'), onOpen: i => showVid(i), onReveal: loadVid, onClose: resetVid, step: d => { showVid(vi + d); loadVid(); } });
+const openVideo = i => videoV.open(i);
+$$('[data-vid]').forEach(b => b.addEventListener('click', () => openVideo(+b.dataset.vid)));
+$('#vvprev').addEventListener('click', () => videoV.step(-1)); $('#vvnext').addEventListener('click', () => videoV.step(1));
 
 /* formulario */
 $('#booking').addEventListener('submit', e => { e.preventDefault(); const f = new FormData(e.currentTarget);
@@ -911,7 +985,7 @@ function sched() { const spb = 60 / 104 / 4; while (nextT < ac.currentTime + .3)
   if (s % 2 === 1 && Math.random() < .55) tone(PEN[Math.floor(Math.random() * 5)] * 4, nextT, spb * 1.4, 'square', .035);
   nextT += spb; stepN++; } }
 $('#snd').addEventListener('click', e => { const b = e.currentTarget;
-  if (!ac) { const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return; ac = new AC(); master = ac.createGain(); master.gain.value = .6; master.connect(ac.destination); }
+  if (!initAC()) return;
   musicOn = !musicOn; b.textContent = musicOn ? '♪ SÍ' : '♪ NO'; b.setAttribute('aria-pressed', String(musicOn));
   if (musicOn) { ac.resume(); nextT = ac.currentTime + .05; tmr = setInterval(sched, 90); } else { clearInterval(tmr); } });
 
