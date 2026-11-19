@@ -752,7 +752,7 @@ function propsBanda(zx, t) {
   const sp = 74, gy0 = fy + 4, SL = [-1, 1, 0];
   /* el que se adelanta se dibuja al final, para quedar por delante de los otros */
   [0, 2, 1].sort((a, b) => gz[a] - gz[b]).forEach(i => {
-    const x = zx + SL[i] * sp, a = act[i], play = a > .5, eu = play ? a : 0, seg = Math.floor(t / 2.6 + i * 1.37), r = hsh(seg * 3.1 + i * 17), r2 = hsh(seg * 7.7 + i * 5);
+    const x = zx + SL[i] * sp, a = act[i], play = a > .5, eu = play ? a * (.5 + .5 * ((i !== 2 && !MEMBER_AUDIO[i]) ? impI : .85)) : 0, seg = Math.floor(t / 2.6 + i * 1.37), r = hsh(seg * 3.1 + i * 17), r2 = hsh(seg * 7.7 + i * 5);
     const g = gz[i], gy = gy0 + Math.round(26 * g), sc = (hovC[i] || g > .02) ? 1.25 : 1;   /* baja de la tarima y camina al frente */
     hovC[i] = mouseX >= x - 26 * sc && mouseX < x + 26 * sc && mouseY >= gy0 - 56 * sc && mouseY < gy + 2 && !vOpen;
     gz[i] = sel === i ? Math.min(1, g + dtG / .9) : Math.max(0, g - dtG / .6); const walk = gz[i] !== g;
@@ -963,11 +963,34 @@ const castBtns = $$('.cbtn[data-char]'), infos = $$('.info'), zBanda = $('#z-ban
    0 = Medrano (bajo) · 1 = Nieva (guitarra) · 2 = Maurel (batería). Ej: 0: 'assets/audio/medrano-bajo.mp3' */
 const MEMBER_AUDIO = { 0: null, 1: null, 2: null }, MKIND = ['bass', 'guitar', 'drums'];
 let mAud = null, mTimer = 0, mDelay = 0;
-function stopMember() { clearTimeout(mDelay); if (mAud) { mAud.pause(); mAud = null; } clearInterval(mTimer); mTimer = 0; }
+function stopMember() { impI = .7; clearTimeout(mDelay); if (mAud) { mAud.pause(); mAud = null; } clearInterval(mTimer); mTimer = 0; }
 function playMember(i) {
   stopMember(); if (!initAC()) return; const f = MEMBER_AUDIO[i];
   if (f) { mAud = new Audio(f); mAud.loop = true; mAud.play().catch(() => {}); }
-  else { synth(MKIND[i]); mTimer = setInterval(() => synth(MKIND[i]), 1600); }
+  else if (MKIND[i] === 'drums') { synth('drums'); mTimer = setInterval(() => synth('drums'), 1600); }
+  else startImprov(i);
+}
+/* Improvisación de bajo y guitarra: escala de tonos enteros sobre B (B C# D# F G A), que contiene las tres raíces del fondo (B, Eb=D#, G).
+   La altura de las notas sube y baja siguiendo una curva de intensidad; a más intensidad, más agudo, más fuerte y más notas.
+   Las semicorcheas acentuadas (2ª de cada tiempo) siempre suenan. Si la música está encendida, se engancha a su misma grilla. */
+const WHOLE = [0, 2, 4, 6, 8, 10];
+let impI = .7;
+function startImprov(i) {
+  const bass = i === 0, lo = bass ? 0 : 2, hi = bass ? 11 : 17, base = bass ? 123.47 : 246.94, spb = 60 / FUNK_BPM / 4, t0 = ac.currentTime;
+  let n = bass ? 5 : 9, nextImp = musicOn ? nextT : t0 + .08, step = musicOn ? stepN : 1;
+  const inten = el => .5 + .35 * Math.sin(el * 2 * Math.PI / 7.2) + .15 * Math.sin(el * 2 * Math.PI / 2.9);
+  mTimer = setInterval(() => {
+    while (nextImp < ac.currentTime + .25) {
+      const I = inten(nextImp - t0); impI = Math.max(0, Math.min(1, I)); const acc = step % 4 === 1;
+      if (acc || (step % 2 === 0 ? Math.random() < .55 + .4 * I : Math.random() < I * .8)) {
+        const tgt = lo + I * (hi - lo), dir = n < tgt - .5 ? 1 : n > tgt + .5 ? -1 : (Math.random() < .5 ? 1 : -1);
+        n = Math.max(lo, Math.min(hi, n + dir * (Math.random() < .22 ? 2 : 1)));
+        const f = base * Math.pow(2, (12 * Math.floor(n / 6) + WHOLE[n % 6]) / 12), v = (bass ? .2 : .05) * (.45 + .9 * I) * (acc ? 1.35 : 1), d = spb * (1.3 - .5 * I);
+        if (bass) { tone(f, nextImp, d, 'triangle', v); tone(f, nextImp, d * .6, 'square', v * .12); } else { tone(f, nextImp, d, 'sawtooth', v); tone(f * 2, nextImp, d * .5, 'square', v * .15); }
+      }
+      nextImp += spb; step++;
+    }
+  }, 90);
 }
 function selectChar(i) {
   if (i === sel) i = -1; sel = i; stopMember(); if (i >= 0) { initAC(); mDelay = setTimeout(() => { if (sel === i) playMember(i); }, 900); }   /* la música entra cuando llega al frente */
