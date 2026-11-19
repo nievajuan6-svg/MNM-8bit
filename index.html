@@ -109,8 +109,11 @@ textarea{min-height:92px;resize:vertical}
 .zone[data-side="H"] .hero{position:absolute;left:0;right:0;top:13%;text-align:center;pointer-events:none;padding:0 14px}
 .hero *{pointer-events:auto}
 .hero .eyebrow{color:var(--cream);text-shadow:2px 2px 0 #000;font-size:10px;margin-bottom:18px}
-.title{margin:0;font-family:var(--px);font-weight:400;line-height:.95;color:var(--cream);font-size:clamp(42px,10vw,132px);-webkit-text-stroke:.045em var(--ink);paint-order:stroke fill;text-shadow:.05em .05em 0 var(--orange),.1em .1em 0 var(--red),.15em .15em 0 var(--red3)}
-.title small{display:block;font-size:.3em;letter-spacing:.7em;margin:.25em 0 0 .7em;color:var(--gold);text-shadow:.12em .12em 0 var(--red2)}
+.title{margin:0;line-height:0;font-weight:400}
+.title svg{display:block;margin:0 auto;width:clamp(170px,25vw,320px);height:auto;overflow:visible}
+.title .bar{display:block;width:clamp(120px,19vw,240px);height:clamp(3px,.55vw,6px);margin:clamp(6px,1.1vw,14px) auto clamp(8px,1.4vw,16px);background:var(--cream);box-shadow:3px 3px 0 var(--red2)}
+.title small{display:block;font-family:var(--px);font-size:clamp(11px,2.3vw,28px);letter-spacing:.9em;padding-left:.9em;line-height:1.2;color:var(--cream);text-shadow:3px 3px 0 var(--red2)}
+.logo svg{display:block;height:22px;width:auto;overflow:visible}
 .lead{font-family:var(--px);font-size:clamp(9px,1.1vw,13px);line-height:1.8;margin:10px auto 8px;max-width:620px;text-shadow:2px 2px 0 #000}
 .actions{display:none}
 body:not(.intro) .actions{display:block}
@@ -173,7 +176,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
 <div class="crt" aria-hidden="true"></div>
 
 <header class="hud top">
-  <a class="logo" href="#inicio" data-go="inicio" aria-label="MNM Trío, inicio">MNM<b>·</b>TRÍO</a>
+  <a class="logo" href="#inicio" data-go="inicio" aria-label="MNM Trío, inicio"><span id="logo-mini" aria-hidden="true">MNM</span></a>
   <nav class="menu" id="menu" aria-label="Zonas del escenario">
     <a href="#sobre" data-go="sobre">Propuesta</a><a href="#musica" data-go="musica">Música</a><a href="#galeria" data-go="galeria">Fotos</a><a href="#banda" data-go="banda">Banda</a><a href="#rider" data-go="rider">Rider</a><a href="#recursos" data-go="recursos">Material</a><a href="#contacto" data-go="contacto">Booking</a>
   </nav>
@@ -188,7 +191,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
 <section class="zone on" id="z-inicio" data-id="inicio" data-side="H" aria-label="Inicio">
   <div class="hero">
     <div class="eyebrow">Sierras chicas · Córdoba, Argentina</div>
-    <h1 class="title">MNM<small>TRÍO</small></h1>
+    <h1 class="title" aria-label="MNM Trío"><span id="logo-hero" aria-hidden="true"></span><i class="bar" aria-hidden="true"></i><small aria-hidden="true">TRÍO</small></h1>
     <p class="lead">Instrumental - Jazz - Rock - Original - Improvisación</p>
     <button class="btn" id="start" type="button">▶ PRESS START</button>
     <div class="actions"><a class="btn" href="#musica" data-go="musica">Ver videos</a><a class="btn alt" href="#contacto" data-go="contacto">Contrataciones</a></div>
@@ -346,6 +349,21 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
 const Z = 8, ZW = 320, W = Z * ZW;
 const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* ---------- logo MNM: M, N y M fusionadas compartiendo los palos, en pixel-art ---------- */
+function logoSVG(layers) {
+  const st = 5, D = 22, H = 28, th = 6, W = 3 * D + st; let d = '';
+  for (let y = 0; y < H; y++) {
+    const row = new Uint8Array(W), fill = (a, b) => { for (let x = Math.max(0, Math.round(a)); x < Math.min(W, Math.round(b)); x++) row[x] = 1; }, p = (y + .5) / H;
+    for (let k = 0; k < 4; k++) fill(k * D, k * D + st);
+    [0, 2].forEach(m => { const o = m * D; fill(o + st / 2 + D / 2 * p - th / 2, o + st / 2 + D / 2 * p + th / 2); fill(o + D + st / 2 - D / 2 * p - th / 2, o + D + st / 2 - D / 2 * p + th / 2); });
+    fill(D + st / 2 + D * p - th / 2, D + st / 2 + D * p + th / 2);
+    for (let x = 0; x < W;) { if (!row[x]) { x++; continue; } let e = x; while (e < W && row[e]) e++; d += `M${x} ${y}h${e - x}v1h-${e - x}z`; x = e; }
+  }
+  return `<svg viewBox="0 0 ${W + 6} ${H + 6}" shape-rendering="crispEdges" focusable="false">` + layers.map(([dx, dy, c]) => `<path d="${d}" transform="translate(${dx} ${dy})" fill="${c}"/>`).join('') + '</svg>';
+}
+$('#logo-hero').innerHTML = logoSVG([[6, 6, '#4a0c1e'], [4, 4, '#c8282a'], [2, 2, '#e8742c'], [0, 0, '#f7ebc8']]);
+$('#logo-mini').innerHTML = logoSVG([[2, 2, '#7a1220'], [0, 0, '#f7ebc8']]);
+
 const cv = $('#stage'), ctx = cv.getContext('2d', { alpha: false });
 let w = 0, h = 0, ps = 4, mobile = false;
 
@@ -522,6 +540,14 @@ function drawChar(i, x, y, s, t, ph, o = {}) {
   ctx.save(); ctx.translate(Math.round(x), Math.round(y)); ctx.scale(s * face, s); human(c, t, ph, o); ctx.restore();
 }
 
+/* ---------- chispas (pirotecnia del escenario) ---------- */
+const sparks = [];
+function spark(x, y) { if (sparks.length < 90) sparks.push({ x, y, vx: (Math.random() - .5) * 26, vy: -(50 + Math.random() * 50), life: .7 + Math.random() * .5, c: ['#ffe08a', '#fff', '#f0b43c', '#e8742c'][Math.floor(Math.random() * 4)] }); }
+function drawSparks(dt) {
+  for (let i = sparks.length - 1; i >= 0; i--) { const p = sparks[i]; p.life -= dt; p.vy += 120 * dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.life <= 0) { sparks.splice(i, 1); continue; }
+    alpha(Math.min(1, p.life * 2), () => R(p.x, p.y, 1, p.life > .4 ? 2 : 1, p.c)); }
+}
+
 /* ---------- partículas (notas) ---------- */
 const notes = [];
 function note(x, y) { if (notes.length < 44) notes.push({ x, y, vx: (Math.random() - .5) * 12, vy: -(14 + Math.random() * 14), life: 1.6, c: ['#f0b43c', '#f7ebc8', '#e8742c'][Math.floor(Math.random() * 3)] }); }
@@ -690,7 +716,7 @@ function propsBanda(zx, t) {
     else { face = i === 0 ? (r < .65 ? 1 : -1) : i === 1 ? (r < .65 ? -1 : 1) : (r < .5 ? 1 : -1); tilt = r2 < .22 ? -1 : r2 > .78 ? 1 : 0; }
     if (a > .05) beam(x, 40, x + 2, gy + 8, 5, 26, '#ffe08a', .24 * a);
     drawChar(i, x, gy, 1, t, i * .33, { play, eu, tilt, face, hop: hopH(i) });
-    if (play) { if (Math.random() < .4) note(x + (Math.random() - .5) * 34, gy - 56); if (Math.floor(t * 10 + i) % 3 === 0) { const sx = x + (Math.random() - .5) * 70, sy = gy - 20 - Math.random() * 50; R(sx, sy - 2, 1, 5, '#ffe08a'); R(sx - 2, sy, 5, 1, '#ffe08a'); } }
+    if (play) { spark(zx - 118, gy + 10); spark(zx + 118, gy + 10); if (Math.random() < .4) note(x + (Math.random() - .5) * 34, gy - 56); if (Math.floor(t * 10 + i) % 3 === 0) { const sx = x + (Math.random() - .5) * 70, sy = gy - 20 - Math.random() * 50; R(sx, sy - 2, 1, 5, '#ffe08a'); R(sx - 2, sy, 5, 1, '#ffe08a'); } }
     const by = gy - 64 + Math.round(Math.sin(t * 4 + i) * 2); R(x - 7, by, 14, 9, play ? '#f7ebc8' : '#f0b43c'); txt('P' + (SL[i] + 2), x, by + 1, '#14091a', 8, 'center'); R(x - 2, by + 9, 4, 2, play ? '#f7ebc8' : '#f0b43c'); R(x - 1, by + 11, 2, 1, play ? '#f7ebc8' : '#f0b43c');
     if (say[i] > 0) bubble(x - face * 26, gy - 50, sayT[i]);
     else if (!play && sel < 0 && ((t / 2.6 + i * 1.37) % 1) > .35 && r2 > .62) bubble(x - face * 26, gy - 50, ['...', 'zzz', '- -', '?'][Math.floor(r * 4) % 4]);
@@ -752,15 +778,18 @@ function propsContacto(zx, t) {
 }
 
 /* ---------- público (primer plano, parallax 1.5) ---------- */
+let cm = .45;
 function drawCrowd(t) {
   const o = -mod(camX * 1.5, 128), spec = [[4, 22, 15, '#0a0612'], [27, 26, 17, '#12091c'], [52, 20, 14, '#0a0612'], [75, 28, 16, '#190d26'], [100, 22, 15, '#0a0612']];
   const bot = h;
   for (let x = o - 128, n = 0; x < w + 8; x += 128, n++) {
     const idx = mod(Math.floor((camX * 1.5) / 128) + Math.round((x - o) / 128) , 30);
     spec.forEach(([dx, hh, hw, col], k) => { const cx = x + dx + 6, top = bot - hh - 8 - (k % 2) * 4 - (mod(idx * 3 + k, 3)) * 2;
-      const up = Math.sin(t * 3 + k * 2 + idx * .9) > .1; const bob = Math.round(Math.sin(t * 5 + k + idx) * 1);
+      const lv = cm, up = lv > .3 && Math.sin(t * 3 + k * 2 + idx * .9) > .6 - lv * .7;
+      const bob = lv > .7 ? Math.round(Math.sin(t * (7 + lv * 4) + k + idx) * 2) : lv > .3 ? Math.round(Math.sin(t * 5 + k + idx)) : Math.round(Math.sin(t * 1.1 + k * 1.7 + idx) * .6);
       R(cx - hw / 2 - 2, top + 12 + bob, hw + 4, hh + 40, col); R(cx - hw / 2, top + bob, hw, 14, col); R(cx - hw / 2 + 1, top + bob, hw - 2, 1, 'rgba(240,180,60,.5)'); R(cx - hw / 2, top + 1 + bob, 1, 12, 'rgba(232,116,44,.35)');
-      if (up) { R(cx - hw / 2 - 5, top + 2 + bob - 8, 3, 16, col); R(cx + hw / 2 + 2, top - 3 + bob - 6, 3, 16, col); R(cx - hw / 2 - 5, top - 6 + bob, 3, 2, '#d49a6a'); R(cx + hw / 2 + 2, top - 9 + bob, 3, 2, '#d49a6a'); } else { R(cx - hw / 2 - 4, top + 14 + bob, 3, 8, col); R(cx + hw / 2 + 1, top + 14 + bob, 3, 8, col); }
+      if (up) { R(cx - hw / 2 - 5, top + 2 + bob - 8, 3, 16, col); R(cx + hw / 2 + 2, top - 3 + bob - 6, 3, 16, col); R(cx - hw / 2 - 5, top - 6 + bob, 3, 2, '#d49a6a'); R(cx + hw / 2 + 2, top - 9 + bob, 3, 2, '#d49a6a');
+        if (lv > .7 && (k + idx) % 2 === 0) { const fl = Math.sin(t * 9 + k * 3 + idx) > .85; R(cx - hw / 2 - 6, top - 15 + bob, 4, 7, '#222'); R(cx - hw / 2 - 5, top - 14 + bob, 2, 5, fl ? '#ffffff' : '#6ac8ff'); if (fl) alpha(.5, () => R(cx - hw / 2 - 9, top - 18 + bob, 10, 13, '#fff')); } } else { R(cx - hw / 2 - 4, top + 14 + bob, 3, 8, col); R(cx + hw / 2 + 1, top + 14 + bob, 3, 8, col); }
     });
   }
 }
@@ -817,7 +846,8 @@ function frame(ts) {
   if (vis(6)) { cp = 6; propsRecursos(zxs(6), T); }
   if (vis(7)) { cp = 7; propsContacto(z7, T); }
   cp = -1;
-  drawNotes(dt);
+  drawNotes(dt); drawSparks(dt);
+  { const dB = Math.abs(P.pos - 4), tg = dB < .6 ? (sel >= 0 ? 1 : 0) : .45; cm += (tg - cm) * (1 - Math.exp(-dt * 3)); }
   drawCrowd(T);
   hover = hit(mouseX, mouseY); const cur = hover ? 'pointer' : ''; if (cur !== curCur) { cv.style.cursor = cur; curCur = cur; }
   drawHover();
@@ -878,8 +908,18 @@ addEventListener('keydown', e => {
 
 /* integrantes: se eligen tocándolos en el escenario */
 const castBtns = $$('.cbtn[data-char]'), infos = $$('.info'), zBanda = $('#z-banda'), hintBand = $('#hint-band');
+/* Audios largos de cada integrante tocando (null = suena un sonido sintetizado en loop).
+   0 = Medrano (bajo) · 1 = Nieva (guitarra) · 2 = Maurel (batería). Ej: 0: 'assets/audio/medrano-bajo.mp3' */
+const MEMBER_AUDIO = { 0: null, 1: null, 2: null }, MKIND = ['bass', 'guitar', 'drums'];
+let mAud = null, mTimer = 0;
+function stopMember() { if (mAud) { mAud.pause(); mAud = null; } clearInterval(mTimer); mTimer = 0; }
+function playMember(i) {
+  stopMember(); if (!initAC()) return; const f = MEMBER_AUDIO[i];
+  if (f) { mAud = new Audio(f); mAud.loop = true; mAud.play().catch(() => {}); }
+  else { synth(MKIND[i]); mTimer = setInterval(() => synth(MKIND[i]), 1600); }
+}
 function selectChar(i) {
-  if (i === sel) i = -1; sel = i;
+  if (i === sel) i = -1; sel = i; if (i >= 0) playMember(i); else stopMember();
   if (i >= 0) { hop[i] = .45; say[i] = .9; sayT[i] = 'OK!'; sfx('blip'); }
   infos.forEach(el => { const on = +el.dataset.char === i; el.classList.toggle('show', on); el.setAttribute('aria-hidden', on ? 'false' : 'true'); });
   castBtns.forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.char === i)));
