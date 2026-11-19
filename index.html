@@ -152,6 +152,10 @@ a.sr:focus{width:auto;height:auto;clip:auto;left:50%;top:64px;transform:translat
 .zone[data-side] .viewer .vpanel{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(580px,92vw);max-height:calc(100% - 70px)}
 .zone[data-side] .viewer .vpanel.wide{width:min(700px,92vw)}
 .vcard{margin-top:0}
+.ask{position:fixed;inset:0;z-index:30;display:grid;place-items:center;background:rgba(10,6,20,.72);padding:16px}
+.ask[hidden]{display:none}
+.ask .askbox{position:relative;width:min(460px,92vw)}
+.ask .btn{margin:6px 10px 4px 3px}
 .vmask{position:fixed;pointer-events:none;image-rendering:pixelated;z-index:3}
 
 /* ---------- móvil ---------- */
@@ -343,6 +347,7 @@ noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;backg
   </div>
 </section>
 </main>
+<div class="ask" id="ask" hidden role="alertdialog" aria-modal="true" aria-labelledby="ask-t" aria-describedby="ask-p"><div class="panel askbox"><div class="eyebrow">· Descarga</div><h2 id="ask-t">¿Estás seguro?</h2><p id="ask-p"></p><div class="row"><button class="btn" id="ask-yes" type="button">SÍ</button><button class="btn alt" id="ask-no" type="button">NO, VOLVER</button></div></div></div>
 <noscript>Esta versión del sitio necesita JavaScript. Escribinos a mnmtrio.contacto@gmail.com</noscript>
 
 <script>
@@ -430,7 +435,24 @@ function drawHover() {
   if (o.label) { let ly = o.below ? y + hh + 8 : y - 17; if (ly < 14) ly = y + hh + 6; plate(x + ww / 2, ly, o.label, '#f0b43c', '#14091a', '#14091a'); }
 }
 const DL = { rider: 'rider-tecnico-mnm.pdf', dossier: 'Dossier%20MNM.pdf', drive: 'https://drive.google.com/drive/folders/1pYYdS91ni0eL767dDGwYZU3x_s9TMLy6?usp=drive_link', mail: 'mailto:mnmtrio.contacto@gmail.com' };
-function dl(k) { const a = document.createElement('a'); a.href = DL[k]; if (k === 'rider' || k === 'dossier') a.download = ''; if (k === 'drive') { a.target = '_blank'; a.rel = 'noopener'; } a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); }
+const ASK = {
+  rider: ['¿Descargar el rider?', 'Se descargará el rider técnico de MNM Trío en PDF (rider-tecnico-mnm.pdf).', 'SÍ, DESCARGAR'],
+  dossier: ['¿Descargar el dossier?', 'Se descargará el dossier de prensa de MNM Trío en PDF.', 'SÍ, DESCARGAR'],
+  drive: ['¿Abrir la carpeta de prensa?', 'Se abrirá la carpeta de Google Drive en otra pestaña.', 'SÍ, ABRIR']
+};
+let askKey = null, askPrev = null;
+const askEl = $('#ask');
+function dl(k) {   /* toda descarga pasa primero por una confirmación */
+  if (!ASK[k]) { doDl(k); return; }
+  askKey = k; askPrev = document.activeElement; $('#ask-t').textContent = ASK[k][0]; $('#ask-p').textContent = ASK[k][1]; $('#ask-yes').textContent = ASK[k][2];
+  askEl.hidden = false; $('#ask-no').focus();
+}
+function closeAsk() { askEl.hidden = true; askKey = null; if (askPrev && askPrev.focus) askPrev.focus(); }
+$('#ask-yes').addEventListener('click', () => { const k = askKey; closeAsk(); if (k) doDl(k); });
+$('#ask-no').addEventListener('click', closeAsk);
+askEl.addEventListener('click', e => { if (e.target === askEl) closeAsk(); });
+document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a.sr'); if (!a) return; const h = a.getAttribute('href') || '', k = /rider/i.test(h) ? 'rider' : /Dossier/i.test(h) ? 'dossier' : /drive\.google/.test(h) ? 'drive' : null; if (k) { e.preventDefault(); dl(k); } });
+function doDl(k) { const a = document.createElement('a'); a.href = DL[k]; if (k === 'rider' || k === 'dossier') a.download = ''; if (k === 'drive') { a.target = '_blank'; a.rel = 'noopener'; } a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); }
 cv.addEventListener('mousemove', e => { mouseX = e.clientX / ps; mouseY = e.clientY / ps; });
 cv.addEventListener('mouseleave', () => { mouseX = mouseY = -999; });
 cv.addEventListener('click', e => { const o = hit(e.clientX / ps, e.clientY / ps); if (o) o.fn(); else if (sel >= 0 && mod(tz, Z) === 4) selectChar(-1); });
@@ -888,7 +910,7 @@ function updateHud() {
 let cd = 0;
 function shortest(i) { let d = mod(i - mod(tz, Z), Z); if (d > Z / 2) d -= Z; return d; }
 function goId(id, instant) { const i = ids.indexOf(id); if (i < 0) return; tz += shortest(i); if (instant) camX = tz * ZW; closeMenu(); }
-function stepZ(d) { if (!started || vOpen) return; const n = Date.now(); if (n < cd) return; cd = n + (reduce ? 0 : 650); tz += d; }
+function stepZ(d) { if (!started || vOpen || askKey) return; const n = Date.now(); if (n < cd) return; cd = n + (reduce ? 0 : 650); tz += d; }
 function startShow() { if (introGo) return; introGo = true; if (wantMusic) setMusic(true); }
 $('#start').addEventListener('click', startShow);
 $$('[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!started) { startShow(); return; } goId(a.dataset.go); }));
@@ -899,16 +921,17 @@ burger.addEventListener('click', () => { const o = menu.classList.toggle('open')
 
 const canScroll = (el, dy) => el.scrollHeight > el.clientHeight + 2 && (dy > 0 ? el.scrollTop + el.clientHeight < el.scrollHeight - 1 : el.scrollTop > 0);
 addEventListener('wheel', e => {
-  if (!started) return; if (vOpen) { e.preventDefault(); return; } const pan = e.target.closest && e.target.closest('.panel'); if (pan && canScroll(pan, e.deltaY)) return;
+  if (!started) return; if (vOpen || askKey) { e.preventDefault(); return; } const pan = e.target.closest && e.target.closest('.panel'); if (pan && canScroll(pan, e.deltaY)) return;
   e.preventDefault(); if (Math.abs(e.deltaY) + Math.abs(e.deltaX) > 8) stepZ((Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) > 0 ? 1 : -1);
 }, { passive: false });
 let tsx = 0, tsy = 0, tpan = null;
 addEventListener('touchstart', e => { const t = e.touches[0]; tsx = t.clientX; tsy = t.clientY; tpan = e.target.closest && e.target.closest('.panel'); }, { passive: true });
-addEventListener('touchend', e => { if (!started || vOpen) return; const t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
+addEventListener('touchend', e => { if (!started || vOpen || askKey) return; const t = e.changedTouches[0], dx = t.clientX - tsx, dy = t.clientY - tsy;
   if (tpan) { if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 2) stepZ(dx < 0 ? 1 : -1); return; }
   if (Math.max(Math.abs(dx), Math.abs(dy)) > 40) stepZ((Math.abs(dx) > Math.abs(dy) ? dx : dy) < 0 ? 1 : -1); }, { passive: true });
 addEventListener('keydown', e => {
   if (e.target.closest && e.target.closest('input,textarea,select')) return;
+  if (askKey) { if (e.key === 'Escape') { e.preventDefault(); closeAsk(); } return; }
   if (vOpen) { if (e.key === 'Escape') { e.preventDefault(); closeViewer(); } else if (e.key === 'ArrowLeft' && curV && curV.step) { e.preventDefault(); curV.step(-1); } else if (e.key === 'ArrowRight' && curV && curV.step) { e.preventDefault(); curV.step(1); } return; }
   if (e.key === 'Escape' && sel >= 0) { selectChar(-1); return; }
   if (!started) { if (e.key === 'Enter' || e.key === ' ') { if (document.activeElement && document.activeElement.id === 'start') return; e.preventDefault(); startShow(); } return; }
