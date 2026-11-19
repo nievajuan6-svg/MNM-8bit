@@ -22,6 +22,7 @@ a{color:inherit}
 /* ---------- HUD ---------- */
 .hud{position:fixed;z-index:5;transition:opacity .6s}
 body.intro .hud{opacity:0;pointer-events:none}
+body.modal .arrow{display:none}
 .top{left:0;right:0;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:linear-gradient(#14091add,#14091a00)}
 .logo{font-family:var(--px);font-size:14px;color:var(--cream);text-decoration:none;text-shadow:2px 2px 0 var(--red2);white-space:nowrap}
 .logo b{color:var(--gold)}
@@ -164,8 +165,8 @@ a.sr:focus{width:auto;height:auto;clip:auto;left:50%;top:64px;transform:translat
  .menu{display:none;position:absolute;left:8px;right:8px;top:48px;background:#120a1c;border:3px solid var(--gold);padding:8px;flex-direction:column;align-items:stretch;gap:0;max-height:70vh;overflow:auto}
  .menu.open{display:flex}.menu a{padding:12px 10px;font-size:10px}
  .burger{display:block}.deg{display:none}
- .zone[data-side] .panel{left:8px;right:8px;top:auto;bottom:34px;transform:none;width:auto;max-height:57vh;padding:16px 16px 18px;font-size:21px}
- .zone[data-side="C"] .panel{left:8px;right:8px;transform:none;width:auto;bottom:34px;max-height:57vh}
+ .zone[data-side] .panel{left:8px;right:8px;top:auto;bottom:34px;transform:none;width:auto;max-height:52vh;padding:16px 16px 18px;font-size:21px}
+ .zone[data-side="C"] .panel{left:8px;right:8px;transform:none;width:auto;bottom:34px;max-height:52vh}
  .cards{grid-template-columns:1fr}.two{grid-template-columns:1fr}.rider{grid-template-columns:1fr}
  .arrow{top:15%;width:36px;height:44px;font-size:14px}.arrow.l{left:4px}.arrow.r{right:4px}
  .bottom{padding:6px 10px 8px;justify-content:center}.bottom>span{display:none}.hint{display:none}
@@ -174,7 +175,12 @@ a.sr:focus{width:auto;height:auto;clip:auto;left:50%;top:64px;transform:translat
  .zone[data-side="C"] .panel.info,.zone[data-side="C"] .panel.info.R,.zone[data-side="C"] .panel.info.L{left:8px;right:8px;top:auto;bottom:34px;width:auto;max-height:42vh;transform:translate(0,30px)}
  .zone[data-side="C"] .panel.info.show{transform:none}
  .zone.has-sel .cast{display:none}
- .stagehint{bottom:84px;font-size:9px}.cast{bottom:42px}
+ .stagehint{bottom:152px;font-size:9px;padding:0 12px}.cast{bottom:44px;gap:6px;padding:0 8px}
+ .cbtn{font-size:8px;padding:12px 9px;min-height:44px}
+ .info .x{padding:12px 14px;font-size:12px;min-width:44px;min-height:44px;right:4px;top:4px}
+ .btn{min-height:44px}
+ .vpanel .row{flex-wrap:nowrap;gap:8px}.vpanel h2{font-size:12px}
+ .zone[data-side="C"] .panel.info{padding-top:50px}
 }
 @media (prefers-reduced-motion:reduce){body.intro #start{animation:none}.zone,.zone.on{transition:none}}
 noscript{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:var(--ink);padding:20px;text-align:center;font-size:26px}
@@ -393,9 +399,9 @@ const mk = (id, fd, fm, focal, top, bot, ca, cb, night) => ({ id, fd, fm, focal,
 const ZP = [
   mk('inicio',   .80, .74, .50, '#2a0a18', '#5a1020', '#b02420', '#7e1522', 0),
   mk('sobre',    .66, .36, .28, '#1a0f2e', '#3b1850', '#6a2a8a', '#431b66', 0),
-  mk('musica',   .66, .36, .50, '#0c1430', '#1d2b5c', '#2b4a96', '#1d3470', 0),
-  mk('galeria',  .66, .36, .50, '#2a1208', '#5a2a10', '#a8561e', '#7a3a14', 0),
-  mk('banda',    .44, .36, .50, '#2a0a18', '#5a1020', '#c8282a', '#7a1220', 0),
+  mk('musica',   .66, .50, .50, '#0c1430', '#1d2b5c', '#2b4a96', '#1d3470', 0),
+  mk('galeria',  .66, .50, .50, '#2a1208', '#5a2a10', '#a8561e', '#7a3a14', 0),
+  mk('banda',    .44, .44, .50, '#2a0a18', '#5a1020', '#c8282a', '#7a1220', 0),
   mk('rider',    .66, .36, .72, '#071a22', '#12404a', '#1f6e78', '#164e58', 0),
   mk('recursos', .66, .36, .28, '#3a1408', '#8a3a14', '#e0702a', '#b04c1c', 0),
   mk('contacto', .52, .38, .50, '#04030c', '#1a1030', '#2a1a4a', '#1a0f33', 1),
@@ -424,7 +430,8 @@ const bump = (k, d = .4) => { bumps[k] = T + d; };
 const bmp = k => Math.max(0, (bumps[k] || 0) - T);
 const shk = k => { const r = bmp(k); return r > 0 ? Math.round(Math.sin(T * 60) * Math.min(1, r * 4) * 2) : 0; };
 function hot(x, y, ww, hh, fn, label, below) { if (cp === mod(tz, Z) && settled && started && introT >= 1 && !vOpen) HS.push({ x: Math.round(x), y: Math.round(y), w: Math.round(ww), h: Math.round(hh), fn, label, below }); }
-const hit = (px, py) => { for (let i = HS.length - 1; i >= 0; i--) { const o = HS[i]; if (px >= o.x && px < o.x + o.w && py >= o.y && py < o.y + o.h) return o; } return null; };
+const coarse = matchMedia('(pointer: coarse)').matches;
+const hit = (px, py) => { const pd = coarse ? 8 : 0; for (let i = HS.length - 1; i >= 0; i--) { const o = HS[i]; if (px >= o.x - pd && px < o.x + o.w + pd && py >= o.y - pd && py < o.y + o.h + pd) return o; } return null; };
 function plate(cx, y, str, bg, fg, bd, sz = 8, clamp = true) { ctx.font = `${sz}px ${fontOK ? '"Press Start 2P"' : 'monospace'}`; const bw = Math.ceil(ctx.measureText(str).width) + 6, bh = sz + 3; let lx = Math.round(cx - bw / 2); if (clamp) lx = Math.max(safeLo, Math.min((safeHi || w) - bw - 2, lx)); R(lx - 1, y - 1, bw + 2, bh + 2, bd); R(lx, y, bw, bh, bg); txt(str, lx + bw / 2, y + 2, fg, sz, 'center'); return lx; }
 function bubble(x, y, str) { plate(x, y, str, '#f7ebc8', '#14091a', '#14091a'); R(x - 2, y + 12, 4, 2, '#f7ebc8'); R(x - 1, y + 14, 2, 1, '#f7ebc8'); }
 const tag = (x, y, str) => plate(x, y, str, '#14091a', '#f0b43c', '#f0b43c', 6, false);
@@ -445,15 +452,15 @@ const askEl = $('#ask');
 function dl(k) {   /* toda descarga pasa primero por una confirmación */
   if (!ASK[k]) { doDl(k); return; }
   askKey = k; askPrev = document.activeElement; $('#ask-t').textContent = ASK[k][0]; $('#ask-p').textContent = ASK[k][1]; $('#ask-yes').textContent = ASK[k][2];
-  askEl.hidden = false; $('#ask-no').focus();
+  askEl.hidden = false; document.body.classList.add('modal'); $('#ask-no').focus();
 }
-function closeAsk() { askEl.hidden = true; askKey = null; if (askPrev && askPrev.focus) askPrev.focus(); }
+function closeAsk() { askEl.hidden = true; if (!vOpen) document.body.classList.remove('modal'); askKey = null; if (askPrev && askPrev.focus) askPrev.focus(); }
 $('#ask-yes').addEventListener('click', () => { const k = askKey; closeAsk(); if (k) doDl(k); });
 $('#ask-no').addEventListener('click', closeAsk);
 askEl.addEventListener('click', e => { if (e.target === askEl) closeAsk(); });
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('a.sr'); if (!a) return; const h = a.getAttribute('href') || '', k = /rider/i.test(h) ? 'rider' : /Dossier/i.test(h) ? 'dossier' : /drive\.google/.test(h) ? 'drive' : null; if (k) { e.preventDefault(); dl(k); } });
 function doDl(k) { const a = document.createElement('a'); a.href = DL[k]; if (k === 'rider' || k === 'dossier') a.download = ''; if (k === 'drive') { a.target = '_blank'; a.rel = 'noopener'; } a.style.display = 'none'; document.body.appendChild(a); a.click(); a.remove(); }
-cv.addEventListener('mousemove', e => { mouseX = e.clientX / ps; mouseY = e.clientY / ps; });
+cv.addEventListener('mousemove', e => { if (coarse) return; mouseX = e.clientX / ps; mouseY = e.clientY / ps; });
 cv.addEventListener('mouseleave', () => { mouseX = mouseY = -999; });
 cv.addEventListener('click', e => { const o = hit(e.clientX / ps, e.clientY / ps); if (o) o.fn(); else if (sel >= 0 && mod(tz, Z) === 4) selectChar(-1); });
 function burst(x, y, n = 8) { for (let i = 0; i < n; i++) note(x + (Math.random() - .5) * 16, y); }
@@ -463,7 +470,7 @@ function sfx(k) { if (!ac || !musicOn) return; const t0 = ac.currentTime;
 
 function resize() {
   mobile = innerWidth < 760;
-  ps = Math.max(2, Math.round(Math.min(innerHeight / 190, innerWidth / 190)));
+  ps = mobile ? 1.5 : Math.max(2, Math.round(Math.min(innerHeight / 190, innerWidth / 190)));
   w = Math.ceil(innerWidth / ps); h = Math.ceil(innerHeight / ps);
   cv.width = w; cv.height = h; cv.style.width = w * ps + 'px'; cv.style.height = h * ps + 'px';
   ctx.imageSmoothingEnabled = false;
@@ -1010,7 +1017,7 @@ function makeViewer(o) {
     if (P > .42 && dir > 0 && !revealed) { revealed = true; if (o.onReveal) o.onReveal(); }
     root.style.background = `rgba(10,6,20,${(.62 * Math.min(1, P * 2.5)).toFixed(2)})`;
   }
-  function finish() { raf = 0; vOpen = false; isOpen = false; if (curV === api) curV = null; root.hidden = true; root.setAttribute('aria-hidden', 'true'); mctx.clearRect(0, 0, cols || 1, rows || 1); hint.style.visibility = 'visible'; }
+  function finish() { raf = 0; vOpen = false; isOpen = false; if (curV === api) curV = null; root.hidden = true; document.body.classList.remove('modal'); root.setAttribute('aria-hidden', 'true'); mctx.clearRect(0, 0, cols || 1, rows || 1); hint.style.visibility = 'visible'; }
   function tick(now) {
     const dt = Math.min(.05, (now - last) / 1000 || .016); last = now; P = Math.max(0, Math.min(1, P + dir * dt / 1.1)); draw();
     if (dir > 0 && P >= 1) { mctx.clearRect(0, 0, cols, rows); raf = 0; return; }
@@ -1020,7 +1027,7 @@ function makeViewer(o) {
   const api = {
     step: o.step,
     open(i) {
-      if (vOpen) return; if (o.onOpen) o.onOpen(i); vOpen = true; isOpen = true; curV = api; revealed = false; root.hidden = false; root.setAttribute('aria-hidden', 'false'); hint.style.visibility = 'hidden';
+      if (vOpen) return; if (o.onOpen) o.onOpen(i); vOpen = true; isOpen = true; curV = api; revealed = false; root.hidden = false; root.setAttribute('aria-hidden', 'false'); hint.style.visibility = 'hidden'; document.body.classList.add('modal');
       if (reduce) { P = 1; panel.style.visibility = 'visible'; root.style.background = 'rgba(10,6,20,.62)'; if (o.onReveal) o.onReveal(); $(o.closeBtn).focus(); return; }
       panel.style.visibility = 'hidden'; build(); P = 0; dir = 1; last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(tick);
       setTimeout(() => { if (isOpen && dir > 0) $(o.closeBtn).focus(); }, 600);
